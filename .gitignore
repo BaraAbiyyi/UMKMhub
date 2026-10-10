@@ -29,6 +29,7 @@ Thumbs.db
 # Documents & assignment briefs
 *.pdf
 *.docx
+TUGAS_*.md
 
 # AI folders & rules
 /.claude/
