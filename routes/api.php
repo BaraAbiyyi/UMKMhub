@@ -214,6 +214,108 @@ Route::get('/products/{id}', function ($id) use ($getProducts) {
 
 /*
 |--------------------------------------------------------------------------
+| TUGAS MINGGU 3 - REST API DESIGN (Afsani Wahyu Mawardi)
+| Endpoint: /api/categories
+| Resource: Categories – pengelompokan produk UMKM
+| Atribut: id, name | Relasi: punya banyak Products
+|--------------------------------------------------------------------------
+*/
+
+// Data default kategori
+$defaultCategories = [
+    ['id' => 1, 'name' => 'Makanan Ringan'],
+    ['id' => 2, 'name' => 'Minuman'],
+    ['id' => 3, 'name' => 'Fashion'],
+    ['id' => 4, 'name' => 'Kecantikan & Perawatan'],
+    ['id' => 5, 'name' => 'Kerajinan'],
+];
+
+// Helper untuk mengambil list kategori dari Cache
+$getCategories = function () use ($defaultCategories): array {
+    return Cache::get('umkm_categories', $defaultCategories);
+};
+
+// 3. GET /api/categories – Menampilkan semua kategori produk (Afsani)
+Route::get('/categories', function () use ($getCategories) {
+    return response()->json([
+        'data' => array_values($getCategories()),
+    ], 200);
+});
+
+// 4. POST /api/categories – Menambah kategori baru (Afsani – Bagian C2)
+Route::post('/categories', function (Request $request) use ($getCategories) {
+    // A. Cek Format JSON rusak (400 Bad Request)
+    if ($request->header('Content-Type') === 'application/json' && empty($request->json()->all()) && ! empty($request->getContent())) {
+        return response()->json([
+            'error' => [
+                'code'    => 'BAD_REQUEST',
+                'message' => 'Format JSON tidak valid',
+            ],
+        ], 400);
+    }
+
+    // B. Cek Autentikasi Bearer Token (401 Unauthorized)
+    $authHeader = $request->header('Authorization');
+    if (! $authHeader || ! str_starts_with($authHeader, 'Bearer ')) {
+        return response()->json([
+            'error' => [
+                'code'    => 'UNAUTHORIZED',
+                'message' => 'Autentikasi diperlukan',
+            ],
+        ], 401);
+    }
+
+    // C. Validasi field – name wajib diisi (422 Unprocessable Content)
+    $validator = validator($request->all(), [
+        'name' => 'required|string|min:2',
+    ], [
+        'name.required' => 'Nama kategori wajib diisi',
+        'name.min'      => 'Nama kategori minimal 2 karakter',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'error' => [
+                'code'    => 'VALIDATION_ERROR',
+                'message' => 'Validasi gagal',
+                'details' => $validator->errors()->toArray(),
+            ],
+        ], 422);
+    }
+
+    $categories = $getCategories();
+    $newName    = trim($request->input('name'));
+
+    // D. Cek duplikat nama kategori (409 Conflict)
+    $isDuplicate = collect($categories)->contains(function ($cat) use ($newName) {
+        return strtolower($cat['name']) === strtolower($newName);
+    });
+
+    if ($isDuplicate) {
+        return response()->json([
+            'error' => [
+                'code'    => 'CONFLICT',
+                'message' => 'Kategori sudah terdaftar',
+            ],
+        ], 409);
+    }
+
+    // E. Simpan kategori baru
+    $nextId      = empty($categories) ? 1 : (max(array_column($categories, 'id')) + 1);
+    $newCategory = ['id' => $nextId, 'name' => $newName];
+
+    $categories[] = $newCategory;
+    Cache::forever('umkm_categories', $categories);
+
+    return response()->json([
+        'data' => $newCategory,
+    ], 201, [
+        'Location' => "/api/categories/{$nextId}",
+    ]);
+});
+
+/*
+|--------------------------------------------------------------------------
 | TUGAS MINGGU 2 (KOMPATIBILITAS SEBELUMNYA)
 | Endpoint: /api/v1/products
 |--------------------------------------------------------------------------
