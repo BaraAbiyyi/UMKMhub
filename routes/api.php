@@ -98,6 +98,19 @@ $getOrders = function () use ($defaultOrders): array {
     return Cache::get('umkm_orders', $defaultOrders);
 };
 
+// Data default stok (Resource: stocks)
+$defaultStocks = [
+    ['product_id' => 1, 'stock' => 50],
+    ['product_id' => 2, 'stock' => 25],
+    ['product_id' => 3, 'stock' => 10],
+    ['product_id' => 4, 'stock' => 40],
+    ['product_id' => 5, 'stock' => 30],
+];
+
+$getStocks = function () use ($defaultStocks): array {
+    return Cache::get('umkm_stocks', $defaultStocks);
+};
+
 // Helper Validasi Token & Otorisasi
 $validateAdminAccess = function (Request $request) {
     $authHeader = $request->header('Authorization');
@@ -310,6 +323,47 @@ Route::patch('/orders/{id}/status', function (Request $request, $id) use ($getOr
     Cache::forever('umkm_orders', $orders);
 
     return response()->json(['data' => $orders[$index]], 200);
+});
+
+// 11. PATCH /api/products/{id}/stock
+Route::patch('/products/{id}/stock', function (Request $request, $id) use ($getProducts, $getStocks, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
+    $products = $getProducts();
+    $index = collect($products)->search(fn($item) => $item['id'] === (int) $id);
+    if ($index === false) {
+        return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Produk tidak ditemukan']], 404);
+    }
+
+    $validator = validator($request->all(), [
+        'stock' => 'required|integer|min:0',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => ['code' => 'VALIDATION_ERROR', 'message' => 'Jumlah stok tidak valid']], 422);
+    }
+
+    // Sync stok ke products cache
+    $products[$index]['stock'] = (int) $request->stock;
+    Cache::forever('umkm_products', $products);
+
+    // Update stocks cache
+    $stocks = $getStocks();
+    $stockIndex = collect($stocks)->search(fn($item) => $item['product_id'] === (int) $id);
+    if ($stockIndex !== false) {
+        $stocks[$stockIndex]['stock'] = (int) $request->stock;
+    } else {
+        $stocks[] = ['product_id' => (int) $id, 'stock' => (int) $request->stock];
+    }
+    Cache::forever('umkm_stocks', $stocks);
+
+    return response()->json([
+        'data' => [
+            'product_id' => (int) $id,
+            'stock'      => (int) $request->stock,
+            'message'    => 'Stok produk berhasil diperbarui',
+        ],
+    ], 200);
 });
 
 
