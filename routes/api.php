@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
-// Data default katalog produk UMKM (sesuai spesifikasi atribut PRD Minggu 3)
+// Data default produk (Resource: products)
 $defaultProducts = [
     [
         'id' => 1,
@@ -63,65 +63,43 @@ $defaultProducts = [
     ],
 ];
 
-// Helper untuk mengambil list produk dari Cache
+// Data default kategori (Resource: categories)
+$defaultCategories = [
+    ['id' => 1, 'name' => 'Makanan Ringan'],
+    ['id' => 2, 'name' => 'Minuman'],
+    ['id' => 3, 'name' => 'Fashion'],
+    ['id' => 4, 'name' => 'Kecantikan & Perawatan'],
+];
+
+// Data default pesanan (Resource: orders & order-items)
+$defaultOrders = [
+    [
+        'id' => 1,
+        'customer_name' => 'Budi Santoso',
+        'status' => 'pending',
+        'total_price' => 50000,
+        'items' => [
+            ['product_id' => 1, 'quantity' => 2, 'subtotal' => 30000],
+            ['product_id' => 2, 'quantity' => 1, 'subtotal' => 20000],
+        ],
+        'created_at' => '2026-10-12T10:00:00Z',
+    ]
+];
+
 $getProducts = function () use ($defaultProducts): array {
     return Cache::get('umkm_products', $defaultProducts);
 };
 
-/*
-|--------------------------------------------------------------------------
-| TUGAS MINGGU 3 - REST API DESIGN (Bara Abiyyi Muslimin)
-| Endpoint: /api/products
-| Konvensi: Prefix /api, Response {"data": ...}, Error {"error": ...}
-|--------------------------------------------------------------------------
-*/
+$getCategories = function () use ($defaultCategories): array {
+    return Cache::get('umkm_categories', $defaultCategories);
+};
 
-// 1. GET /api/products - Menampilkan daftar produk dengan filter query & paginasi
-Route::get('/products', function (Request $request) use ($getProducts) {
-    $products = collect($getProducts());
+$getOrders = function () use ($defaultOrders): array {
+    return Cache::get('umkm_orders', $defaultOrders);
+};
 
-    // Filter pencarian (?search=...)
-    if ($search = $request->query('search')) {
-        $products = $products->filter(function ($item) use ($search) {
-            return str_contains(strtolower($item['name']), strtolower($search))
-                || str_contains(strtolower($item['description'] ?? ''), strtolower($search));
-        });
-    }
-
-    // Filter kategori (?category_id=...)
-    if ($categoryId = $request->query('category_id')) {
-        $products = $products->where('category_id', (int) $categoryId);
-    }
-
-    // Paginasi (?page=..., ?per_page=...)
-    $page = max(1, (int) $request->query('page', 1));
-    $perPage = max(1, (int) $request->query('per_page', 10));
-    $total = $products->count();
-    $items = $products->values()->forPage($page, $perPage)->values()->all();
-
-    return response()->json([
-        'data' => $items,
-        'meta' => [
-            'page' => $page,
-            'per_page' => $perPage,
-            'total' => $total,
-        ],
-    ], 200);
-});
-
-// 2. POST /api/products - Menambah produk baru ke katalog (Spesifikasi C1 Bara Abiyyi)
-Route::post('/products', function (Request $request) use ($getProducts) {
-    // A. Cek Format JSON rusak / invalid (400 Bad Request)
-    if ($request->header('Content-Type') === 'application/json' && empty($request->json()->all()) && ! empty($request->getContent())) {
-        return response()->json([
-            'error' => [
-                'code' => 'BAD_REQUEST',
-                'message' => 'Format JSON tidak valid',
-            ],
-        ], 400);
-    }
-
-    // B. Cek Autentikasi Bearer Token (401 Unauthorized)
+// Helper Validasi Token & Otorisasi
+$validateAdminAccess = function (Request $request) {
     $authHeader = $request->header('Authorization');
     if (! $authHeader || ! str_starts_with($authHeader, 'Bearer ')) {
         return response()->json([
@@ -134,190 +112,211 @@ Route::post('/products', function (Request $request) use ($getProducts) {
 
     $token = trim(substr($authHeader, 7));
 
-    // C. Cek Hak Akses / Otorisasi Admin (403 Forbidden)
     if (in_array($token, ['invalid-token', 'unauthorized-user', 'customer-token'])) {
         return response()->json([
             'error' => [
                 'code' => 'FORBIDDEN',
-                'message' => 'Anda tidak berhak menambah produk',
+                'message' => 'Anda tidak berhak mengakses aksi ini',
             ],
         ], 403);
     }
 
-    // D. Validasi Field (422 Unprocessable Content)
+    return null;
+};
+
+/*
+|--------------------------------------------------------------------------
+| IMPLEMENTASI 10 ENDPOINT REST API MINGGU 3 (UMKMHub)
+|--------------------------------------------------------------------------
+*/
+
+// 1. GET /api/products
+Route::get('/products', function (Request $request) use ($getProducts) {
+    $products = collect($getProducts());
+
+    if ($search = $request->query('search')) {
+        $products = $products->filter(fn($item) => str_contains(strtolower($item['name']), strtolower($search)));
+    }
+
+    if ($categoryId = $request->query('category_id')) {
+        $products = $products->where('category_id', (int) $categoryId);
+    }
+
+    $page = max(1, (int) $request->query('page', 1));
+    $perPage = max(1, (int) $request->query('per_page', 10));
+    $total = $products->count();
+    $items = $products->values()->forPage($page, $perPage)->values()->all();
+
+    return response()->json([
+        'data' => $items,
+        'meta' => ['page' => $page, 'per_page' => $perPage, 'total' => $total],
+    ], 200);
+});
+
+// 2. GET /api/products/{id}
+Route::get('/products/{id}', function ($id) use ($getProducts) {
+    $product = collect($getProducts())->firstWhere('id', (int) $id);
+    if (! $product) {
+        return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Produk tidak ditemukan']], 404);
+    }
+    return response()->json(['data' => $product], 200);
+});
+
+// 3. POST /api/products
+Route::post('/products', function (Request $request) use ($getProducts, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
     $validator = validator($request->all(), [
         'name' => 'required|string|min:3',
         'description' => 'nullable|string',
         'price' => 'required|numeric|min:0',
         'category_id' => 'required|integer|min:1',
-    ], [
-        'name.required' => 'Nama produk wajib diisi',
-        'name.min' => 'Nama produk minimal 3 karakter',
-        'price.required' => 'Harga produk wajib diisi',
-        'price.min' => 'Harga produk harus bernilai positif',
-        'category_id.required' => 'Kategori produk wajib diisi',
-        'category_id.integer' => 'Kategori yang dipilih tidak valid',
     ]);
 
     if ($validator->fails()) {
-        return response()->json([
-            'error' => [
-                'code' => 'VALIDATION_ERROR',
-                'message' => 'Validasi gagal',
-                'details' => $validator->errors()->toArray(),
-            ],
-        ], 422);
+        return response()->json(['error' => ['code' => 'VALIDATION_ERROR', 'message' => 'Validasi gagal', 'details' => $validator->errors()->toArray()]], 422);
     }
 
-    $validated = $validator->validated();
     $products = $getProducts();
     $nextId = empty($products) ? 1 : (max(array_column($products, 'id')) + 1);
-
-    $newProduct = [
-        'id' => $nextId,
-        'name' => $validated['name'],
-        'description' => $validated['description'] ?? '',
-        'price' => (float) $validated['price'],
-        'category_id' => (int) $validated['category_id'],
-        'is_active' => true,
-        'created_at' => now()->toIso8601String(),
-    ];
+    $newProduct = array_merge(['id' => $nextId, 'is_active' => true, 'created_at' => now()->toIso8601String()], $validator->validated());
 
     $products[] = $newProduct;
     Cache::forever('umkm_products', $products);
 
-    return response()->json([
-        'data' => $newProduct,
-    ], 201, [
-        'Location' => "/api/products/{$nextId}",
-    ]);
+    return response()->json(['data' => $newProduct], 201, ['Location' => "/api/products/{$nextId}"]);
 });
 
-// 3. GET /api/products/{id} - Menampilkan detail produk
-Route::get('/products/{id}', function ($id) use ($getProducts) {
+// 4. PUT /api/products/{id}
+Route::put('/products/{id}', function (Request $request, $id) use ($getProducts, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
     $products = $getProducts();
-    $product = collect($products)->firstWhere('id', (int) $id);
-
-    if (! $product) {
-        return response()->json([
-            'error' => [
-                'code' => 'NOT_FOUND',
-                'message' => 'Produk tidak ditemukan',
-            ],
-        ], 404);
+    $index = collect($products)->search(fn($item) => $item['id'] === (int) $id);
+    if ($index === false) {
+        return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Produk tidak ditemukan']], 404);
     }
 
-    return response()->json([
-        'data' => $product,
-    ], 200);
-});
-
-/*
-|--------------------------------------------------------------------------
-| TUGAS MINGGU 3 - REST API DESIGN (Afsani Wahyu Mawardi)
-| Endpoint: /api/categories
-| Resource: Categories – pengelompokan produk UMKM
-| Atribut: id, name | Relasi: punya banyak Products
-|--------------------------------------------------------------------------
-*/
-
-// Data default kategori
-$defaultCategories = [
-    ['id' => 1, 'name' => 'Makanan Ringan'],
-    ['id' => 2, 'name' => 'Minuman'],
-    ['id' => 3, 'name' => 'Fashion'],
-    ['id' => 4, 'name' => 'Kecantikan & Perawatan'],
-    ['id' => 5, 'name' => 'Kerajinan'],
-];
-
-// Helper untuk mengambil list kategori dari Cache
-$getCategories = function () use ($defaultCategories): array {
-    return Cache::get('umkm_categories', $defaultCategories);
-};
-
-// 3. GET /api/categories – Menampilkan semua kategori produk (Afsani)
-Route::get('/categories', function () use ($getCategories) {
-    return response()->json([
-        'data' => array_values($getCategories()),
-    ], 200);
-});
-
-// 4. POST /api/categories – Menambah kategori baru (Afsani – Bagian C2)
-Route::post('/categories', function (Request $request) use ($getCategories) {
-    // A. Cek Format JSON rusak (400 Bad Request)
-    if ($request->header('Content-Type') === 'application/json' && empty($request->json()->all()) && ! empty($request->getContent())) {
-        return response()->json([
-            'error' => [
-                'code'    => 'BAD_REQUEST',
-                'message' => 'Format JSON tidak valid',
-            ],
-        ], 400);
-    }
-
-    // B. Cek Autentikasi Bearer Token (401 Unauthorized)
-    $authHeader = $request->header('Authorization');
-    if (! $authHeader || ! str_starts_with($authHeader, 'Bearer ')) {
-        return response()->json([
-            'error' => [
-                'code'    => 'UNAUTHORIZED',
-                'message' => 'Autentikasi diperlukan',
-            ],
-        ], 401);
-    }
-
-    // C. Validasi field – name wajib diisi (422 Unprocessable Content)
     $validator = validator($request->all(), [
-        'name' => 'required|string|min:2',
-    ], [
-        'name.required' => 'Nama kategori wajib diisi',
-        'name.min'      => 'Nama kategori minimal 2 karakter',
+        'name' => 'required|string|min:3',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'category_id' => 'required|integer|min:1',
     ]);
 
     if ($validator->fails()) {
-        return response()->json([
-            'error' => [
-                'code'    => 'VALIDATION_ERROR',
-                'message' => 'Validasi gagal',
-                'details' => $validator->errors()->toArray(),
-            ],
-        ], 422);
+        return response()->json(['error' => ['code' => 'VALIDATION_ERROR', 'message' => 'Validasi gagal', 'details' => $validator->errors()->toArray()]], 422);
     }
 
-    $categories = $getCategories();
-    $newName    = trim($request->input('name'));
+    $products[$index] = array_merge($products[$index], $validator->validated());
+    Cache::forever('umkm_products', $products);
 
-    // D. Cek duplikat nama kategori (409 Conflict)
-    $isDuplicate = collect($categories)->contains(function ($cat) use ($newName) {
-        return strtolower($cat['name']) === strtolower($newName);
+    return response()->json(['data' => $products[$index]], 200);
+});
+
+// 5. DELETE /api/products/{id}
+Route::delete('/products/{id}', function (Request $request, $id) use ($getProducts, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
+    $products = $getProducts();
+    $index = collect($products)->search(fn($item) => $item['id'] === (int) $id);
+    if ($index === false) {
+        return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Produk tidak ditemukan']], 404);
+    }
+
+    array_splice($products, $index, 1);
+    Cache::forever('umkm_products', array_values($products));
+
+    return response()->json(['data' => ['message' => 'Produk berhasil dihapus', 'id' => (int) $id]], 200);
+});
+
+// 6. GET /api/categories
+Route::get('/categories', function () use ($getCategories) {
+    return response()->json(['data' => $getCategories()], 200);
+});
+
+// 7. POST /api/orders
+Route::post('/orders', function (Request $request) use ($getOrders, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
+    $validator = validator($request->all(), [
+        'customer_name' => 'required|string',
+        'items' => 'required|array|min:1',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => ['code' => 'VALIDATION_ERROR', 'message' => 'Validasi pesanan gagal']], 422);
+    }
+
+    $orders = $getOrders();
+    $nextId = empty($orders) ? 1 : (max(array_column($orders, 'id')) + 1);
+    
+    $items = $request->items;
+    $totalPrice = collect($items)->sum(function ($item) {
+        return isset($item['subtotal'])
+            ? (float) $item['subtotal']
+            : ((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 1));
     });
 
-    if ($isDuplicate) {
-        return response()->json([
-            'error' => [
-                'code'    => 'CONFLICT',
-                'message' => 'Kategori sudah terdaftar',
-            ],
-        ], 409);
+    $newOrder = [
+        'id' => $nextId,
+        'customer_name' => $request->customer_name,
+        'status' => 'pending',
+        'total_price' => $totalPrice,
+        'items' => $items,
+        'created_at' => now()->toIso8601String(),
+    ];
+
+    $orders[] = $newOrder;
+    Cache::forever('umkm_orders', $orders);
+
+    return response()->json(['data' => $newOrder], 201, ['Location' => "/api/orders/{$nextId}"]);
+});
+
+// 8. GET /api/orders
+Route::get('/orders', function (Request $request) use ($getOrders, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+    return response()->json(['data' => $getOrders()], 200);
+});
+
+// 9. GET /api/orders/{id}
+Route::get('/orders/{id}', function (Request $request, $id) use ($getOrders, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
+    $order = collect($getOrders())->firstWhere('id', (int) $id);
+    if (! $order) {
+        return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Pesanan tidak ditemukan']], 404);
     }
 
-    // E. Simpan kategori baru
-    $nextId      = empty($categories) ? 1 : (max(array_column($categories, 'id')) + 1);
-    $newCategory = ['id' => $nextId, 'name' => $newName];
-
-    $categories[] = $newCategory;
-    Cache::forever('umkm_categories', $categories);
-
-    return response()->json([
-        'data' => $newCategory,
-    ], 201, [
-        'Location' => "/api/categories/{$nextId}",
-    ]);
+    return response()->json(['data' => $order], 200);
 });
+
+// 10. PATCH /api/orders/{id}/status
+Route::patch('/orders/{id}/status', function (Request $request, $id) use ($getOrders, $validateAdminAccess) {
+    if ($error = $validateAdminAccess($request)) return $error;
+
+    $orders = $getOrders();
+    $index = collect($orders)->search(fn($item) => $item['id'] === (int) $id);
+    if ($index === false) {
+        return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Pesanan tidak ditemukan']], 404);
+    }
+
+    $validator = validator($request->all(), ['status' => 'required|string|in:pending,processing,completed,cancelled']);
+    if ($validator->fails()) {
+        return response()->json(['error' => ['code' => 'VALIDATION_ERROR', 'message' => 'Status tidak valid']], 422);
+    }
+
+    $orders[$index]['status'] = $request->status;
+    Cache::forever('umkm_orders', $orders);
+
+    return response()->json(['data' => $orders[$index]], 200);
+});
+
 
 /*
 |--------------------------------------------------------------------------
-| TUGAS MINGGU 2 (KOMPATIBILITAS SEBELUMNYA)
-| Endpoint: /api/v1/products
+| KOMPATIBILITAS RUTE MINGGU 2 (/api/v1/products)
+| Agar file ProductApiTest.php milik kelompokmu tetap lolos test
 |--------------------------------------------------------------------------
 */
 Route::prefix('v1')->group(function () use ($getProducts) {
