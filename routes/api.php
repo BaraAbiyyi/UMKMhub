@@ -251,12 +251,19 @@ Route::post('/orders', function (Request $request) use ($getOrders, $validateAdm
     $orders = $getOrders();
     $nextId = empty($orders) ? 1 : (max(array_column($orders, 'id')) + 1);
     
+    $items = $request->items;
+    $totalPrice = collect($items)->sum(function ($item) {
+        return isset($item['subtotal'])
+            ? (float) $item['subtotal']
+            : ((float) ($item['price'] ?? 0)) * ((int) ($item['quantity'] ?? 1));
+    });
+
     $newOrder = [
         'id' => $nextId,
         'customer_name' => $request->customer_name,
         'status' => 'pending',
-        'total_price' => 50000,
-        'items' => $request->items,
+        'total_price' => $totalPrice,
+        'items' => $items,
         'created_at' => now()->toIso8601String(),
     ];
 
