@@ -2,24 +2,39 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Stock;
+use App\Models\Customer;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $cat = Category::create([
+            'name' => 'Makanan Ringan',
+            'description' => 'Aneka keripik dan jajanan pasar'
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $prod = Product::create([
+            'category_id' => $cat->id,
+            'name' => 'Keripik Tempe Renyah',
+            'description' => 'Keripik tempe gurih khas Malang 200g',
+            'price' => 15000,
+            'is_active' => true,
+        ]);
+
+        Stock::create([
+            'product_id' => $prod->id,
+            'quantity' => 50,
+            'version' => 1,
+        ]);
+
+        Customer::create([
+            'name' => 'Budi Santoso',
+            'phone' => '081234567890',
+            'address' => 'Jl. Merdeka No. 10, Tegal'
         ]);
     }
 }
