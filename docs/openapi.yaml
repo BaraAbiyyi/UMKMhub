@@ -1,42 +1,64 @@
 openapi: 3.1.0
 info:
-  title: UMKMHub REST API Contract
+  title: UMKMHub API
   version: 1.0.0
   description: |-
-    Kontrak API resmi untuk platform **UMKMHub** (Integrasi Katalog dan Manajemen Pesanan UMKM).
-    Disusun menggunakan pendekatan *API-first (design-first)* untuk menyelaraskan tim frontend, backend Laravel, dan QA testing.
+    Kontrak OpenAPI v1 resmi untuk platform **UMKMHub** (Katalog Produk dan Manajemen Pesanan UMKM).
+    Disusun sebagai bagian kedua **Milestone M2 – API Blueprint** berdasarkan kesepakatan rancangan *API Design Document v1 (Minggu 4)*.
+
+    ### Identitas Tim Pengembang (Kelompok 1)
+    * **Bara Abiyyi Muslimin** (Products - Penyusun Akhir)
+    * **Afsani Wahyu Mawardi** (Categories - Reviewer Status Code)
+    * **Arif Nur Syifa** (Stocks - Specialist Concurrency Control)
+    * **Agil Syeh Febukhori** (Customers - Reviewer Format JSON)
+    * **Yesa Anggit Prayugo** (Orders & Order Items)
+
+    ### Prinsip Desain & Aturan Bisnis
+    1. **API-first / Design-first**: Menjadi single source of truth bagi backend Laravel, frontend web/mobile, dan automated contract testing.
+    2. **Format Pertukaran Data**: Seluruh request dan response menggunakan format `application/json` dengan data envelope standar `"data"`.
+    3. **Concurrency Control**: Resource stok (`stocks`) mengimplementasikan mekanisme *Optimistic Concurrency Control (OCC)* berbasis field `version` untuk mencegah *race condition* dan *lost update*.
+    4. **Aksi Non-CRUD Status Transaksi**: Perubahan siklus hidup pesanan dimodelkan sebagai *Resource Attribute Update* melalui endpoint `PATCH /orders/{id}/status`.
+    5. **Otorisasi & Keamanan**: Menggunakan skema HTTP Bearer Token (Laravel Sanctum) secara global, dengan pengecualian `security: []` pada endpoint publik.
+  contact:
+    name: Kelompok 1 – Pemrograman Web Service
+    email: dev@umkmhub.id
+  license:
+    name: CC BY 4.0
+    url: https://creativecommons.org/licenses/by/4.0/
 
 servers:
+  - url: http://127.0.0.1:8000/api/v1
+    description: Lingkungan Pengembangan Lokal (Local Development Server)
   - url: https://api.umkmhub.id/api/v1
     description: Server Produksi (Production Gateway)
-  - url: https://dev-api.umkmhub.id/api/v1
-    description: Lingkungan Pengembangan (Development Server)
 
 tags:
   - name: Auth
-    description: Autentikasi dan manajemen sesi bearer token
-  - name: Users
-    description: Manajemen data pengguna dan singleton profile (/me)
+    description: Autentikasi user dan penerbitan Bearer token
   - name: Categories
-    description: Master data kategori etalase produk UMKM
+    description: Pengelolaan master data kategori produk UMKM
   - name: Products
-    description: Katalog produk UMKM, inventaris stok, dan review
+    description: Pengelolaan katalog dan etalase produk UMKM
+  - name: Stocks
+    description: Monitoring dan pembaruan kuantitas stok dengan Optimistic Locking
+  - name: Customers
+    description: Pendaftaran dan pengelolaan data pelanggan UMKM
   - name: Orders
-    description: Transaksi pemesanan, item pesanan, dan siklus hidup pesanan
+    description: Transaksi pemesanan (checkout) dan manajemen siklus hidup pesanan
 
 security:
   - bearerAuth: []
 
 paths:
   # ==========================================
-  # TAG: AUTH
+  # 1. AUTHENTICATION
   # ==========================================
   /auth/login:
     post:
       tags:
         - Auth
-      summary: Login pengguna dan penerbitan bearer token
-      description: Endpoint publik untuk menukarkan kredensial email dan password dengan token otentikasi.
+      summary: Autentikasi user & penerbitan Bearer token
+      description: Endpoint publik untuk menukarkan kredensial email dan password dengan token otentikasi Bearer (Laravel Sanctum).
       operationId: login
       security: []
       requestBody:
@@ -46,24 +68,34 @@ paths:
             schema:
               $ref: "#/components/schemas/LoginInput"
             example:
-              email: "budi.santoso@gmail.com"
+              email: "admin@umkmhub.id"
               password: "password123"
       responses:
         "200":
-          description: Login berhasil, bearer token dikembalikan
+          description: Login berhasil, Bearer token dikembalikan
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/AuthToken"
+              example:
+                data:
+                  token_type: "Bearer"
+                  access_token: "1|sanctum_token_umkmhub_abcdef123456"
+                  expires_in: 86400
         "400":
-          description: Request body format JSON tidak valid
+          description: Format payload JSON tidak valid
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+              example:
+                message: "Format JSON yang dikirimkan tidak valid."
+                code: "BAD_REQUEST"
         "401":
           description: Kredensial email atau password salah
           content:
@@ -76,181 +108,21 @@ paths:
         "422":
           $ref: "#/components/responses/ValidationError"
 
-  /auth/logout:
-    post:
-      tags:
-        - Auth
-      summary: Logout dan pencabutan bearer token
-      description: Mencabut API token yang sedang aktif sehingga tidak dapat digunakan kembali.
-      operationId: logout
-      responses:
-        "204":
-          description: Token berhasil dicabut (No Content)
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
   # ==========================================
-  # TAG: USERS
-  # ==========================================
-  /me:
-    get:
-      tags:
-        - Users
-      summary: Menampilkan profil pengguna yang sedang login
-      description: Mengambil data pengguna pemilik bearer token saat ini (singleton resource).
-      operationId: getAuthenticatedUser
-      responses:
-        "200":
-          description: Data profil pengguna berhasil diambil
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/UserProfile"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-  # ==========================================
-  # TAG: CATEGORIES
-  # ==========================================
-  /categories:
-    get:
-      tags:
-        - Categories
-      summary: Daftar kategori produk
-      description: Mengambil seluruh kategori produk untuk filter etalase.
-      operationId: listCategories
-      security: []
-      responses:
-        "200":
-          description: Daftar kategori berhasil diambil
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Category"
-        "400":
-          description: Request tidak valid
-
-    post:
-      tags:
-        - Categories
-      summary: Menambahkan kategori baru
-      description: Hanya dapat dilakukan oleh pengguna dengan hak akses Administrator.
-      operationId: createCategory
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryInput"
-            example:
-              name: "Kerajinan Bambu"
-              description: "Produk kerajinan anyaman bambu ramah lingkungan khas pedesaan"
-      responses:
-        "201":
-          description: Kategori berhasil dibuat
-          headers:
-            Location:
-              description: URI detail kategori baru
-              schema:
-                type: string
-                example: "/api/v1/categories/5"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Category"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-  /categories/{id}:
-    parameters:
-      - $ref: "#/components/parameters/Id"
-    patch:
-      tags:
-        - Categories
-      summary: Memperbarui data kategori
-      description: Mengubah nama atau deskripsi kategori tertentu.
-      operationId: updateCategory
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryUpdateInput"
-            example:
-              name: "Kerajinan Ramah Lingkungan"
-      responses:
-        "200":
-          description: Kategori berhasil diperbarui
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Category"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-    delete:
-      tags:
-        - Categories
-      summary: Menghapus data kategori
-      description: Menghapus kategori produk. Menolak penghapusan bila masih terdapat produk di dalam kategori ini.
-      operationId: deleteCategory
-      responses:
-        "204":
-          description: Kategori berhasil dihapus
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "409":
-          description: Kategori gagal dihapus karena masih memuat produk aktif
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Kategori tidak dapat dihapus karena masih digunakan oleh produk aktif."
-                code: "CATEGORY_IN_USE"
-
-  # ==========================================
-  # TAG: PRODUCTS
+  # 2. PRODUCTS
   # ==========================================
   /products:
     get:
       tags:
         - Products
-      summary: Daftar katalog produk dengan filter dan pagination
-      description: Mengambil etalase produk UMKM yang dapat difilter, dicari, diurutkan, serta dipaginasi.
+      summary: Daftar produk katalog
+      description: Mengambil daftar katalog produk UMKM dengan dukungan filter kategori, status keaktifan, pencarian kata kunci (q), whitelist sort, dan paginasi.
       operationId: listProducts
       security: []
       parameters:
         - name: category_id
           in: query
+          required: false
           description: Filter produk berdasarkan ID kategori
           schema:
             type: integer
@@ -258,42 +130,29 @@ paths:
           example: 1
         - name: is_active
           in: query
+          required: false
           description: Filter status keaktifan produk
           schema:
             type: boolean
           example: true
-        - name: price_min
-          in: query
-          description: Batas harga minimum produk (Rupiah)
-          schema:
-            type: number
-            minimum: 0
-          example: 10000
-        - name: price_max
-          in: query
-          description: Batas harga maksimum produk (Rupiah)
-          schema:
-            type: number
-            minimum: 0
-          example: 100000
         - name: q
           in: query
-          description: Pencarian kata kunci pada nama atau deskripsi produk
+          required: false
+          description: Pencarian kata kunci pada nama dan deskripsi produk
           schema:
             type: string
             maxLength: 100
           example: "tempe"
         - name: sort
           in: query
-          description: Field pengurutan. Beri tanda '-' di depan nama kolom untuk urutan menurun (descending).
+          required: false
+          description: Field pengurutan data katalog. Gunakan awalan '-' untuk pengurutan menurun (descending).
           schema:
             type: string
             enum:
-              - name
-              - -name
               - price
               - -price
-              - created_at
+              - name
               - -created_at
             default: -created_at
           example: -created_at
@@ -306,14 +165,53 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProductList"
+              example:
+                data:
+                  - id: 1
+                    name: "Keripik Tempe Renyah"
+                    description: "Keripik tempe gurih renyah kemasan 200 gram khas Malang"
+                    price: 15000
+                    category:
+                      id: 1
+                      name: "Makanan Ringan"
+                    is_active: true
+                    created_at: "2026-10-12T08:00:00Z"
+                  - id: 2
+                    name: "Kopi Robusta Dampit 250g"
+                    description: "Kopi bubuk robusta petik merah kemasan 250 gram"
+                    price: 35000
+                    category:
+                      id: 2
+                      name: "Minuman"
+                    is_active: true
+                    created_at: "2026-10-12T08:00:00Z"
+                links:
+                  first: "https://api.umkmhub.id/api/v1/products?page=1&per_page=2"
+                  last: "https://api.umkmhub.id/api/v1/products?page=3&per_page=2"
+                  prev: null
+                  next: "https://api.umkmhub.id/api/v1/products?page=2&per_page=2"
+                meta:
+                  current_page: 1
+                  last_page: 3
+                  per_page: 2
+                  total: 5
+        "400":
+          description: Parameter query tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Parameter filter atau sort tidak valid."
+                code: "INVALID_QUERY_PARAMETER"
         "422":
           $ref: "#/components/responses/ValidationError"
 
     post:
       tags:
         - Products
-      summary: Menambahkan produk baru ke katalog
-      description: Menambahkan produk UMKM baru. Dilakukan oleh Merchant atau Admin.
+      summary: Tambah produk baru ke katalog
+      description: Menambahkan produk baru ke katalog etalase UMKM. Operasi ini dibatasi khusus untuk Aktor Administrator.
       operationId: createProduct
       requestBody:
         required: true
@@ -322,27 +220,38 @@ paths:
             schema:
               $ref: "#/components/schemas/ProductInput"
             example:
-              name: "Keripik Singkong Balado Pedas Manis"
-              description: "Keripik singkong renyah dengan taburan cabai asli dan gula merah alami 250g"
               category_id: 1
-              price: 18000
-              stock: 35
+              name: "Keripik Tempe Renyah"
+              description: "Keripik tempe gurih renyah kemasan 200 gram khas Malang"
+              price: 15000
+              is_active: true
       responses:
         "201":
           description: Produk berhasil dibuat
           headers:
             Location:
-              description: URI produk baru
+              description: URI detail produk baru
               schema:
                 type: string
-                example: "/api/v1/products/6"
+                example: "/api/v1/products/1"
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/Product"
+        "400":
+          description: Request body format JSON tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Format JSON yang dikirimkan tidak valid."
+                code: "BAD_REQUEST"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -356,28 +265,41 @@ paths:
     get:
       tags:
         - Products
-      summary: Detail spesifikasi produk
-      description: Mengambil data rinci sebuah produk berdasarkan ID.
-      operationId: getProductById
+      summary: Detail spesifik suatu produk
+      description: Mengambil data detail spesifik suatu produk berdasarkan ID unik produk, termasuk relasi kategori.
+      operationId: getProduct
       security: []
       responses:
         "200":
-          description: Detail produk berhasil ditemukan
+          description: Detail produk berhasil diambil
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/Product"
+              example:
+                data:
+                  id: 1
+                  name: "Keripik Tempe Renyah"
+                  description: "Keripik tempe gurih renyah kemasan 200 gram khas Malang"
+                  price: 15000
+                  category:
+                    id: 1
+                    name: "Makanan Ringan"
+                  is_active: true
+                  created_at: "2026-10-12T08:00:00Z"
         "404":
           $ref: "#/components/responses/NotFound"
 
     patch:
       tags:
         - Products
-      summary: Memperbarui sebagian atribut produk
-      description: Memperbarui field produk tertentu seperti nama, harga, atau deskripsi tanpa mengganti keseluruhan entitas.
+      summary: Perbarui sebagian data produk
+      description: Memperbarui sebagian atribut data produk (PATCH) seperti harga, nama, deskripsi, atau status keaktifan. Khusus Aktor Administrator.
       operationId: updateProduct
       requestBody:
         required: true
@@ -386,15 +308,17 @@ paths:
             schema:
               $ref: "#/components/schemas/ProductUpdateInput"
             example:
-              price: 17000
-              stock: 45
+              price: 16000
+              is_active: true
       responses:
         "200":
-          description: Produk berhasil diperbarui
+          description: Data produk berhasil diperbarui
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/Product"
@@ -410,12 +334,12 @@ paths:
     delete:
       tags:
         - Products
-      summary: Menghapus produk dari katalog
-      description: Menghapus produk. Gagal bila produk sudah memiliki rekam jejak pesanan yang terkunci.
+      summary: Hapus produk dari katalog
+      description: Menghapus produk dari katalog UMKM. Ditolak bila produk masih tercatat dalam transaksi pesanan. Khusus Aktor Administrator.
       operationId: deleteProduct
       responses:
         "204":
-          description: Produk berhasil dihapus
+          description: Produk berhasil dihapus dari katalog (No Content)
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -425,15 +349,173 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
-  /products/{id}/stock:
+  # ==========================================
+  # 3. CATEGORIES
+  # ==========================================
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: Daftar seluruh kategori produk
+      description: Mengambil seluruh kategori produk untuk filter etalase katalog. Dapat diakses oleh semua pengguna (publik).
+      operationId: listCategories
+      security: []
+      responses:
+        "200":
+          description: Daftar kategori berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Category"
+              example:
+                data:
+                  - id: 1
+                    name: "Makanan Ringan"
+                    description: "Aneka camilan keripik dan jajanan pasar UMKM"
+                  - id: 2
+                    name: "Minuman"
+                    description: "Kopi, teh herbal, dan minuman kemasan lokal"
+        "400":
+          description: Permintaan tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Permintaan data kategori tidak valid."
+                code: "BAD_REQUEST"
+
+    post:
+      tags:
+        - Categories
+      summary: Tambah kategori baru
+      description: Menambahkan kategori baru ke dalam sistem UMKMHub. Khusus Aktor Administrator.
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+            example:
+              name: "Kerajinan Tangan"
+              description: "Produk kerajinan anyaman bambu dan souvenir khas pedesaan"
+      responses:
+        "201":
+          description: Kategori berhasil dibuat
+          headers:
+            Location:
+              description: URI detail kategori baru
+              schema:
+                type: string
+                example: "/api/v1/categories/5"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Category"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Kategori dengan nama tersebut sudah ada di sistem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Kategori dengan nama tersebut sudah terdaftar."
+                code: "CATEGORY_ALREADY_EXISTS"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ==========================================
+  # 4. STOCKS
+  # ==========================================
+  /stocks:
+    get:
+      tags:
+        - Stocks
+      summary: Monitoring jumlah stok seluruh produk
+      description: Monitoring ketersediaan kuantitas stok seluruh produk UMKM dengan filter peringatan stok menipis (low_stock), sort, dan paginasi. Khusus Aktor Administrator.
+      operationId: listStocks
+      parameters:
+        - name: low_stock
+          in: query
+          required: false
+          description: Filter stok yang menipis (kuantitas <= 10)
+          schema:
+            type: boolean
+          example: true
+        - name: sort
+          in: query
+          required: false
+          description: Field pengurutan data stok. Beri awalan '-' untuk urutan menurun (descending).
+          schema:
+            type: string
+            enum:
+              - quantity
+              - -quantity
+              - updated_at
+            default: quantity
+          example: quantity
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: Monitoring data stok produk berhasil diambil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockList"
+              example:
+                data:
+                  - id: 1
+                    product_id: 1
+                    quantity: 50
+                    version: 1
+                    updated_at: "2026-10-24T09:15:00Z"
+                  - id: 2
+                    product_id: 2
+                    quantity: 25
+                    version: 1
+                    updated_at: "2026-10-24T09:15:00Z"
+                links:
+                  first: "https://api.umkmhub.id/api/v1/stocks?page=1&per_page=15"
+                  last: "https://api.umkmhub.id/api/v1/stocks?page=1&per_page=15"
+                  prev: null
+                  next: null
+                meta:
+                  current_page: 1
+                  last_page: 1
+                  per_page: 15
+                  total: 2
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /stocks/{id}:
     parameters:
       - $ref: "#/components/parameters/Id"
     patch:
       tags:
-        - Products
-      summary: Memperbarui jumlah persediaan stok produk
-      description: Aksi pembaruan kuantitas stok produk inventaris UMKM.
-      operationId: updateProductStock
+        - Stocks
+      summary: Update jumlah stok dengan Optimistic Locking
+      description: Memperbarui jumlah stok fisik inventaris UMKM menggunakan mekanisme Optimistic Locking berbasis field version. Client wajib menyertakan nilai version terkini. Jika version di server telah berubah, server merespons 409 Conflict. Khusus Aktor Administrator.
+      operationId: updateStock
       requestBody:
         required: true
         content:
@@ -441,168 +523,131 @@ paths:
             schema:
               $ref: "#/components/schemas/StockUpdateInput"
             example:
-              stock: 60
+              quantity: 60
+              version: 1
       responses:
         "200":
-          description: Stok produk berhasil diperbarui
+          description: Jumlah stok berhasil diperbarui
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    type: object
-                    properties:
-                      product_id:
-                        type: integer
-                        example: 1
-                      stock:
-                        type: integer
-                        example: 60
-                      updated_at:
-                        type: string
-                        format: date-time
-                        example: "2026-10-25T01:30:00+07:00"
+                    $ref: "#/components/schemas/Stock"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-  /products/{id}/reviews:
-    parameters:
-      - $ref: "#/components/parameters/Id"
-    get:
-      tags:
-        - Products
-      summary: Daftar ulasan dan rating produk
-      description: Mengambil riwayat ulasan pembeli terhadap produk tertentu.
-      operationId: listProductReviews
-      security: []
-      responses:
-        "200":
-          description: Daftar ulasan berhasil dimuat
+        "409":
+          description: Konflik concurrency kontrol stok (Optimistic Lock mismatch)
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Review"
-        "404":
-          $ref: "#/components/responses/NotFound"
+                $ref: "#/components/schemas/Error"
+              example:
+                code: "STOK_VERSION_MISMATCH"
+                message: "Stok telah diperbarui oleh pengguna lain. Silakan muat ulang data terbaru."
+        "422":
+          $ref: "#/components/responses/ValidationError"
 
+  # ==========================================
+  # 5. CUSTOMERS
+  # ==========================================
+  /customers:
     post:
       tags:
-        - Products
-      summary: Menambahkan ulasan pembeli untuk produk
-      description: Pembeli yang telah menyelesaikan transaksi dapat memberikan ulasan dan rating 1-5.
-      operationId: createProductReview
+        - Customers
+      summary: Pendaftaran pelanggan baru
+      description: Mendaftarkan profil pelanggan UMKM baru dengan mengisi nama, nomor telepon, dan alamat domisili. Endpoint terbuka untuk umum.
+      operationId: registerCustomer
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReviewInput"
+              $ref: "#/components/schemas/CustomerInput"
             example:
-              rating: 5
-              comment: "Keripiknya benar-benar gurih dan tidak tengik, packaging sangat rapi!"
+              name: "Budi Santoso"
+              phone: "081234567890"
+              address: "Jl. Semanggi Timur No. 12, Malang"
       responses:
         "201":
-          description: Ulasan berhasil ditambahkan
+          description: Pelanggan berhasil didaftarkan
+          headers:
+            Location:
+              description: URI detail pelanggan baru
+              schema:
+                type: string
+                example: "/api/v1/customers/1"
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
-                    $ref: "#/components/schemas/Review"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+                    $ref: "#/components/schemas/Customer"
+        "400":
+          description: Format data pendaftaran JSON tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Format JSON pendaftaran tidak valid."
+                code: "BAD_REQUEST"
         "422":
           $ref: "#/components/responses/ValidationError"
 
-  # ==========================================
-  # TAG: ORDERS
-  # ==========================================
-  /orders:
+  /customers/{id}/orders:
+    parameters:
+      - $ref: "#/components/parameters/Id"
     get:
       tags:
-        - Orders
-      summary: Daftar pesanan transaksi
-      description: Menampilkan daftar transaksi pesanan. Pembeli hanya melihat miliknya; Merchant dan Admin melihat semua yang relevan.
-      operationId: listOrders
+        - Customers
+      summary: Riwayat pesanan milik pelanggan tertentu
+      description: Mengambil seluruh riwayat transaksi pesanan milik pelanggan tertentu (Nested Resource). Khusus dapat diakses oleh Aktor Pelanggan yang bersangkutan.
+      operationId: listCustomerOrders
       parameters:
-        - name: status
-          in: query
-          description: Filter status transaksi pesanan
-          schema:
-            type: string
-            enum:
-              - pending
-              - processing
-              - completed
-              - cancelled
-          example: pending
-        - name: date_from
-          in: query
-          description: Rentang tanggal pesanan mulai (format YYYY-MM-DD)
-          schema:
-            type: string
-            format: date
-          example: "2026-10-01"
-        - name: date_to
-          in: query
-          description: Rentang tanggal pesanan selesai (format YYYY-MM-DD)
-          schema:
-            type: string
-            format: date
-          example: "2026-10-31"
-        - name: q
-          in: query
-          description: Pencarian berdasarkan kode order atau nama pemesan
-          schema:
-            type: string
-            maxLength: 50
-          example: "Santoso"
-        - name: sort
-          in: query
-          description: Field pengurutan urutan
-          schema:
-            type: string
-            enum:
-              - total_amount
-              - -total_amount
-              - created_at
-              - -created_at
-            default: -created_at
-          example: -created_at
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PerPage"
       responses:
         "200":
-          description: Daftar pesanan berhasil diambil
+          description: Riwayat pesanan pelanggan berhasil diambil
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrderList"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "422":
-          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Pelanggan tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Data pelanggan tidak ditemukan."
+                code: "CUSTOMER_NOT_FOUND"
 
+  # ==========================================
+  # 6. ORDERS & ORDER ITEMS
+  # ==========================================
+  /orders:
     post:
       tags:
         - Orders
-      summary: Mengajukan transaksi pesanan baru (Checkout)
-      description: Membuat transaksi pesanan baru berisi daftar item produk yang dibeli.
+      summary: Checkout pesanan baru
+      description: Mengajukan transaksi pemesanan baru. Sistem memvalidasi ketersediaan stok produk, memotong kuantitas stok, dan mengunci transaksi secara atomik (Database Transaction). Aktor Pelanggan.
       operationId: createOrder
       requestBody:
         required: true
@@ -611,7 +656,7 @@ paths:
             schema:
               $ref: "#/components/schemas/OrderInput"
             example:
-              customer_name: "Budi Santoso"
+              customer_id: 1
               items:
                 - product_id: 1
                   quantity: 2
@@ -619,37 +664,42 @@ paths:
                   quantity: 1
       responses:
         "201":
-          description: Pesanan berhasil dibuat
+          description: Pesanan berhasil dibuat (Checkout sukses)
           headers:
             Location:
-              description: URI transaksi pesanan baru
+              description: URI detail pesanan baru
               schema:
                 type: string
-                example: "/api/v1/orders/2"
+                example: "/api/v1/orders/1"
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/Order"
         "400":
-          description: Format request tidak valid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "409":
-          description: Stok produk tidak mencukupi saat proses checkout
+          description: Format request body JSON tidak valid
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                message: "Stok produk Keripik Tempe Renyah tidak mencukupi pesanan."
+                message: "Format JSON yang dikirimkan tidak valid."
+                code: "BAD_REQUEST"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Stok produk tidak mencukupi untuk item pesanan yang diminta
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
                 code: "INSUFFICIENT_STOCK"
+                message: "Stok tidak mencukupi untuk produk: Keripik Tempe Renyah"
         "422":
           $ref: "#/components/responses/ValidationError"
 
@@ -659,19 +709,39 @@ paths:
     get:
       tags:
         - Orders
-      summary: Detail transaksi pesanan dan item
-      description: Mengambil informasi lengkap pesanan termasuk rincian item produk.
-      operationId: getOrderById
+      summary: Detail rincian pesanan dan item yang dipesan
+      description: Mengambil data lengkap sebuah transaksi pesanan termasuk rincian order-items dan nilai total transaksi. Khusus Aktor Pelanggan.
+      operationId: getOrder
       responses:
         "200":
-          description: Detail pesanan berhasil ditemukan
+          description: Detail rincian pesanan berhasil ditemukan
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/Order"
+              example:
+                data:
+                  id: 1
+                  customer_id: 1
+                  total_amount: 65000
+                  status: "pending"
+                  items:
+                    - id: 1
+                      product_id: 1
+                      quantity: 2
+                      price: 15000
+                      subtotal: 30000
+                    - id: 2
+                      product_id: 2
+                      quantity: 1
+                      price: 35000
+                      subtotal: 35000
+                  created_at: "2026-10-25T10:00:00Z"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -685,8 +755,8 @@ paths:
     patch:
       tags:
         - Orders
-      summary: Mengubah status kemajuan pesanan
-      description: Mengubah status siklus hidup pesanan (misal dari pending menjadi processing, atau completed).
+      summary: Mengubah status transaksi pesanan
+      description: Aksi Non-CRUD yang dimodelkan sebagai Resource Attribute Update untuk memperbarui siklus status pesanan (pending -> processing -> completed atau cancelled). Khusus Aktor Administrator.
       operationId: updateOrderStatus
       requestBody:
         required: true
@@ -703,6 +773,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
                   data:
                     $ref: "#/components/schemas/Order"
@@ -712,51 +784,6 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-  /orders/{id}/cancel:
-    parameters:
-      - $ref: "#/components/parameters/Id"
-    post:
-      tags:
-        - Orders
-      summary: Membatalkan pesanan (Aksi Non-CRUD)
-      description: Membatalkan pesanan yang berstatus pending dengan mencatat alasan pembatalan.
-      operationId: cancelOrder
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OrderCancelInput"
-            example:
-              reason: "Ingin mengubah varian produk yang dipesan"
-      responses:
-        "200":
-          description: Pesanan berhasil dibatalkan
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Order"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "409":
-          description: Pesanan tidak dapat dibatalkan karena sudah diproses atau selesai
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Pesanan yang sedang dikirim atau selesai tidak dapat dibatalkan."
-                code: "ORDER_NOT_CANCELLABLE"
         "422":
           $ref: "#/components/responses/ValidationError"
 
@@ -768,15 +795,15 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
-      description: Masukkan token autentikasi API dengan format 'Bearer <token>'
+      bearerFormat: Token
+      description: Masukkan API Bearer Token yang diperoleh saat autentikasi login (contoh 'Bearer <token>').
 
   parameters:
     Id:
       name: id
       in: path
       required: true
-      description: ID unik penanda entitas resource
+      description: ID unik penanda entitas resource (integer positif)
       schema:
         type: integer
         minimum: 1
@@ -786,7 +813,7 @@ components:
       name: page
       in: query
       required: false
-      description: Nomor halaman data yang ingin diambil
+      description: Nomor halaman data yang ingin dimuat
       schema:
         type: integer
         minimum: 1
@@ -797,13 +824,13 @@ components:
       name: per_page
       in: query
       required: false
-      description: Jumlah record per halaman (maksimal 100)
+      description: Jumlah data per halaman (maksimum 100, default 15)
       schema:
         type: integer
         minimum: 1
         maximum: 100
         default: 15
-      example: 10
+      example: 15
 
   responses:
     Unauthorized:
@@ -817,7 +844,7 @@ components:
             code: "UNAUTHORIZED"
 
     Forbidden:
-      description: Pengguna tidak memiliki hak akses yang mencukupi (403)
+      description: Pengguna tidak memiliki hak akses yang mencukupi untuk aksi ini (403)
       content:
         application/json:
           schema:
@@ -833,17 +860,17 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            message: "Data yang diminta tidak ditemukan."
+            message: "Data resource yang diminta tidak ditemukan."
             code: "NOT_FOUND"
 
     Conflict:
-      description: Aksi bertentangan dengan state data saat ini (409)
+      description: Aksi bertentangan dengan kondisi atau versi state resource saat ini (409)
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            message: "Terjadi konflik state data."
+            message: "Terjadi konflik state atau versi data."
             code: "CONFLICT"
 
     ValidationError:
@@ -852,9 +879,14 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ValidationError"
+          example:
+            message: "Data yang dikirimkan tidak valid."
+            errors:
+              price:
+                - "Harga produk harus bernilai positif."
 
   schemas:
-    # ------------------ Global Schemas ------------------
+    # ------------------ Standar Error & Pagination ------------------
     Error:
       type: object
       required:
@@ -862,10 +894,10 @@ components:
       properties:
         message:
           type: string
-          example: "Terjadi kesalahan pada permintaan Anda."
+          example: "Stok telah diperbarui oleh pengguna lain. Silakan muat ulang data terbaru."
         code:
           type: string
-          example: "BAD_REQUEST"
+          example: "STOK_VERSION_MISMATCH"
 
     ValidationError:
       type: object
@@ -875,7 +907,7 @@ components:
       properties:
         message:
           type: string
-          example: "Data yang dikirim tidak valid."
+          example: "Data yang dikirimkan tidak valid."
         errors:
           type: object
           additionalProperties:
@@ -883,10 +915,8 @@ components:
             items:
               type: string
           example:
-            name:
-              - "Nama produk wajib diisi."
             price:
-              - "Harga harus bernilai angka lebih dari 0."
+              - "Harga produk harus bernilai positif."
 
     PaginationMeta:
       type: object
@@ -901,23 +931,13 @@ components:
           example: 1
         per_page:
           type: integer
-          example: 10
-        from:
-          type:
-            - integer
-            - "null"
-          example: 1
-        to:
-          type:
-            - integer
-            - "null"
-          example: 5
+          example: 15
         total:
           type: integer
           example: 25
         last_page:
           type: integer
-          example: 3
+          example: 2
 
     PaginationLinks:
       type: object
@@ -927,7 +947,7 @@ components:
             - string
             - "null"
           format: uri
-          example: "https://api.umkmhub.id/api/v1/products?page=1&per_page=10"
+          example: "https://api.umkmhub.id/api/v1/products?page=1&per_page=15"
         prev:
           type:
             - string
@@ -939,15 +959,15 @@ components:
             - string
             - "null"
           format: uri
-          example: "https://api.umkmhub.id/api/v1/products?page=2&per_page=10"
+          example: "https://api.umkmhub.id/api/v1/products?page=2&per_page=15"
         last:
           type:
             - string
             - "null"
           format: uri
-          example: "https://api.umkmhub.id/api/v1/products?page=3&per_page=10"
+          example: "https://api.umkmhub.id/api/v1/products?page=2&per_page=15"
 
-    # ------------------ Auth & User Schemas ------------------
+    # ------------------ Auth Schemas ------------------
     LoginInput:
       type: object
       required:
@@ -957,7 +977,7 @@ components:
         email:
           type: string
           format: email
-          example: "budi.santoso@gmail.com"
+          example: "admin@umkmhub.id"
         password:
           type: string
           format: password
@@ -969,56 +989,31 @@ components:
       required:
         - token_type
         - access_token
-        - expires_in
       properties:
         token_type:
           type: string
           example: "Bearer"
         access_token:
           type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          example: "1|sanctum_token_umkmhub_abcdef123456"
         expires_in:
           type: integer
           example: 86400
 
-    UserProfile:
+    # ------------------ Category Schemas ------------------
+    CategorySummary:
       type: object
       required:
         - id
         - name
-        - email
-        - role
       properties:
         id:
           type: integer
-          readOnly: true
           example: 1
         name:
           type: string
-          example: "Budi Santoso"
-        email:
-          type: string
-          format: email
-          example: "budi.santoso@gmail.com"
-        role:
-          type: string
-          enum:
-            - admin
-            - merchant
-            - customer
-          example: "customer"
-        phone:
-          type:
-            - string
-            - "null"
-          example: "081234567890"
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-          example: "2026-10-01T09:00:00+07:00"
+          example: "Makanan Ringan"
 
-    # ------------------ Category Schemas ------------------
     Category:
       type: object
       required:
@@ -1033,17 +1028,16 @@ components:
           type: string
           maxLength: 100
           example: "Makanan Ringan"
-        slug:
-          type:
-            - string
-            - "null"
-          readOnly: true
-          example: "makanan-ringan"
         description:
           type:
             - string
             - "null"
-          example: "Aneka camilan keripik, kue basah, dan jajanan pasar UMKM"
+          example: "Aneka camilan keripik dan jajanan pasar UMKM"
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2026-10-12T08:00:00Z"
 
     CategoryInput:
       type: object
@@ -1052,29 +1046,13 @@ components:
       properties:
         name:
           type: string
-          minLength: 3
           maxLength: 100
           example: "Makanan Ringan"
         description:
           type:
             - string
             - "null"
-          example: "Aneka makanan olahan tradisional"
-
-    CategoryUpdateInput:
-      type: object
-      description: Input pembaruan data kategori (PATCH). Seluruh field opsional.
-      properties:
-        name:
-          type: string
-          minLength: 3
-          maxLength: 100
-          example: "Makanan Ringan Khas Daerah"
-        description:
-          type:
-            - string
-            - "null"
-          example: "Aneka makanan olahan tradisional khas daerah"
+          example: "Aneka camilan olahan tradisional khas daerah"
 
     # ------------------ Product Schemas ------------------
     Product:
@@ -1083,8 +1061,9 @@ components:
         - id
         - name
         - price
-        - stock
+        - category
         - is_active
+        - created_at
       properties:
         id:
           type: integer
@@ -1092,23 +1071,19 @@ components:
           example: 1
         name:
           type: string
-          maxLength: 200
+          maxLength: 150
           example: "Keripik Tempe Renyah"
         description:
           type:
             - string
             - "null"
           example: "Keripik tempe gurih renyah kemasan 200 gram khas Malang"
-        category:
-          $ref: "#/components/schemas/Category"
         price:
           type: number
           minimum: 0
           example: 15000
-        stock:
-          type: integer
-          minimum: 0
-          example: 50
+        category:
+          $ref: "#/components/schemas/CategorySummary"
         is_active:
           type: boolean
           example: true
@@ -1116,84 +1091,61 @@ components:
           type: string
           format: date-time
           readOnly: true
-          example: "2026-10-12T08:00:00+07:00"
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          example: "2026-10-15T10:30:00+07:00"
+          example: "2026-10-12T08:00:00Z"
 
     ProductInput:
       type: object
       required:
+        - category_id
         - name
         - price
-        - category_id
       properties:
+        category_id:
+          type: integer
+          minimum: 1
+          example: 1
         name:
           type: string
-          minLength: 3
-          maxLength: 200
+          maxLength: 150
           example: "Keripik Tempe Renyah"
         description:
           type:
             - string
             - "null"
-          example: "Keripik tempe gurih renyah khas Malang 200g"
-        category_id:
-          type: integer
-          minimum: 1
-          example: 1
+          example: "Keripik tempe gurih renyah kemasan 200 gram khas Malang"
         price:
           type: number
           minimum: 0
           example: 15000
-        stock:
-          type: integer
-          minimum: 0
-          default: 0
-          example: 50
+        is_active:
+          type: boolean
+          default: true
+          example: true
 
     ProductUpdateInput:
       type: object
-      description: Input pembaruan sebagian data produk (PATCH). Seluruh field bersifat opsional.
+      description: Input pembaruan sebagian atribut produk (PATCH). Seluruh field bersifat opsional.
       properties:
+        category_id:
+          type: integer
+          minimum: 1
+          example: 1
         name:
           type: string
-          minLength: 3
-          maxLength: 200
+          maxLength: 150
           example: "Keripik Tempe Renyah Spesial"
         description:
           type:
             - string
             - "null"
-          example: "Kemasan baru lebih hemat dan gurih"
-        category_id:
-          type: integer
-          minimum: 1
-          example: 1
+          example: "Kemasan baru lebih hemat dan gurih renyah"
         price:
           type: number
           minimum: 0
-          example: 17000
-        stock:
-          type: integer
-          minimum: 0
-          example: 45
+          example: 16000
         is_active:
           type: boolean
           example: true
-
-    StockUpdateInput:
-      type: object
-      required:
-        - stock
-      properties:
-        stock:
-          type: integer
-          minimum: 0
-          description: Jumlah stok fisik terkini di gudang UMKM
-          example: 45
 
     ProductList:
       type: object
@@ -1210,13 +1162,15 @@ components:
         meta:
           $ref: "#/components/schemas/PaginationMeta"
 
-    Review:
+    # ------------------ Stock Schemas ------------------
+    Stock:
       type: object
       required:
         - id
         - product_id
-        - rating
-        - created_at
+        - quantity
+        - version
+        - updated_at
       properties:
         id:
           type: integer
@@ -1224,48 +1178,112 @@ components:
           example: 1
         product_id:
           type: integer
+          readOnly: true
           example: 1
-        user_name:
-          type: string
-          example: "Budi Santoso"
-        rating:
+        quantity:
+          type: integer
+          minimum: 0
+          example: 50
+        version:
           type: integer
           minimum: 1
-          maximum: 5
-          example: 5
-        comment:
+          example: 1
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2026-10-24T09:15:00Z"
+
+    StockUpdateInput:
+      type: object
+      required:
+        - quantity
+        - version
+      properties:
+        quantity:
+          type: integer
+          minimum: 0
+          description: Jumlah fisik stok produk terkini di gudang UMKM
+          example: 60
+        version:
+          type: integer
+          minimum: 1
+          description: Nomor versi stok saat ini untuk Optimistic Locking Concurrency
+          example: 1
+
+    StockList:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Stock"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    # ------------------ Customer Schemas ------------------
+    Customer:
+      type: object
+      required:
+        - id
+        - name
+        - phone
+        - created_at
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          maxLength: 150
+          example: "Budi Santoso"
+        phone:
+          type: string
+          maxLength: 30
+          example: "081234567890"
+        address:
           type:
             - string
             - "null"
-          example: "Produk sangat segar dan kemasan aman."
+          example: "Jl. Semanggi Timur No. 12, Malang"
         created_at:
           type: string
           format: date-time
-          example: "2026-10-14T11:20:00+07:00"
+          readOnly: true
+          example: "2026-10-24T09:20:00Z"
 
-    ReviewInput:
+    CustomerInput:
       type: object
       required:
-        - rating
+        - name
+        - phone
       properties:
-        rating:
-          type: integer
-          minimum: 1
-          maximum: 5
-          example: 5
-        comment:
+        name:
+          type: string
+          maxLength: 150
+          example: "Budi Santoso"
+        phone:
+          type: string
+          maxLength: 30
+          example: "081234567890"
+        address:
           type:
             - string
             - "null"
-          maxLength: 500
-          example: "Rasa autentik enak sekali!"
+          example: "Jl. Semanggi Timur No. 12, Malang"
 
-    # ------------------ Order Schemas ------------------
+    # ------------------ Order & Order Item Schemas ------------------
     OrderItem:
       type: object
       required:
+        - id
         - product_id
-        - product_name
         - quantity
         - price
         - subtotal
@@ -1277,63 +1295,20 @@ components:
         product_id:
           type: integer
           example: 1
-        product_name:
-          type: string
-          example: "Keripik Tempe Renyah"
         quantity:
           type: integer
           minimum: 1
           example: 2
         price:
           type: number
+          minimum: 0
           example: 15000
         subtotal:
           type: number
+          minimum: 0
           example: 30000
 
-    Order:
-      type: object
-      required:
-        - id
-        - order_number
-        - customer_name
-        - status
-        - total_price
-        - items
-        - created_at
-      properties:
-        id:
-          type: integer
-          readOnly: true
-          example: 1
-        order_number:
-          type: string
-          readOnly: true
-          example: "ORD-20261025-0001"
-        customer_name:
-          type: string
-          example: "Budi Santoso"
-        status:
-          type: string
-          enum:
-            - pending
-            - processing
-            - completed
-            - cancelled
-          example: "pending"
-        total_price:
-          type: number
-          example: 50000
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/OrderItem"
-        created_at:
-          type: string
-          format: date-time
-          example: "2026-10-25T01:15:00+07:00"
-
-    OrderInputItem:
+    OrderItemInput:
       type: object
       required:
         - product_id
@@ -1348,21 +1323,60 @@ components:
           minimum: 1
           example: 2
 
+    Order:
+      type: object
+      required:
+        - id
+        - customer_id
+        - total_amount
+        - status
+        - items
+        - created_at
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        customer_id:
+          type: integer
+          example: 1
+        total_amount:
+          type: number
+          minimum: 0
+          example: 65000
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - completed
+            - cancelled
+          example: "pending"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2026-10-25T10:00:00Z"
+
     OrderInput:
       type: object
       required:
-        - customer_name
+        - customer_id
         - items
       properties:
-        customer_name:
-          type: string
-          minLength: 3
-          example: "Budi Santoso"
+        customer_id:
+          type: integer
+          minimum: 1
+          example: 1
         items:
           type: array
           minItems: 1
           items:
-            $ref: "#/components/schemas/OrderInputItem"
+            $ref: "#/components/schemas/OrderItemInput"
 
     OrderStatusInput:
       type: object
@@ -1377,17 +1391,6 @@ components:
             - completed
             - cancelled
           example: "processing"
-
-    OrderCancelInput:
-      type: object
-      required:
-        - reason
-      properties:
-        reason:
-          type: string
-          minLength: 5
-          maxLength: 255
-          example: "Ingin mengganti jumlah pesanan"
 
     OrderList:
       type: object
