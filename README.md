@@ -91,7 +91,29 @@ Semua request dan response menggunakan format **JSON** dengan base prefix `/api/
 
 ---
 
-## Cara Menjalankan Proyek
+## Milestone M2: API Blueprint & OpenAPI v1 (Minggu 4 & 5)
+
+Proyek ini telah mengadopsi pendekatan **API-first (design-first)** dengan dokumen spesifikasi lengkap:
+1. **API Design Document v1:** [docs/api-design.md](docs/api-design.md) (Minggu 4)
+2. **OpenAPI Specification 3.1.0:** [docs/openapi.yaml](docs/openapi.yaml) (Minggu 5)
+
+### Tools & Validasi Kontrak
+
+- **Linting Kontrak (Redocly CLI):**
+  ```bash
+  npx @redocly/cli lint docs/openapi.yaml
+  ```
+  *Target: 0 error, memastikan kontrak valid sesuai standar OAS 3.1.0.*
+
+- **Menjalankan Mock Server (Prism):**
+  ```bash
+  npx @stoplight/prism-cli mock docs/openapi.yaml
+  ```
+  *Mock server berjalan di `http://127.0.0.1:4010` untuk pengembangan frontend paralel.*
+
+- **Dokumentasi Interaktif (Swagger UI):**
+  Buka [Swagger Editor](https://editor.swagger.io/) atau ekstensi OpenAPI di VS Code, lalu impor `docs/openapi.yaml`.
+
 
 1. **Clone repository:**
    ```bash

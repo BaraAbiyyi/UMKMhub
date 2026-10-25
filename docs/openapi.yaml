@@ -4,14 +4,7 @@ info:
   version: 1.0.0
   description: |-
     Kontrak OpenAPI v1 resmi untuk platform **UMKMHub** (Katalog Produk dan Manajemen Pesanan UMKM).
-    Disusun sebagai bagian kedua **Milestone M2 – API Blueprint** berdasarkan kesepakatan rancangan *API Design Document v1 (Minggu 4)*.
-
-    ### Identitas Tim Pengembang (Kelompok 1)
-    * **Bara Abiyyi Muslimin** (Products - Penyusun Akhir)
-    * **Afsani Wahyu Mawardi** (Categories - Reviewer Status Code)
-    * **Arif Nur Syifa** (Stocks - Specialist Concurrency Control)
-    * **Agil Syeh Febukhori** (Customers - Reviewer Format JSON)
-    * **Yesa Anggit Prayugo** (Orders & Order Items)
+    Disusun sebagai bagian kedua **Milestone M2 - API Blueprint** berdasarkan kesepakatan rancangan *API Design Document v1 (Minggu 4)*.
 
     ### Prinsip Desain & Aturan Bisnis
     1. **API-first / Design-first**: Menjadi single source of truth bagi backend Laravel, frontend web/mobile, dan automated contract testing.
@@ -21,7 +14,7 @@ info:
     5. **Otorisasi & Keamanan**: Menggunakan skema HTTP Bearer Token (Laravel Sanctum) secara global, dengan pengecualian `security: []` pada endpoint publik.
   contact:
     name: Kelompok 1 – Pemrograman Web Service
-    email: dev@umkmhub.id
+    email: kelompok1@umkmhub.id
   license:
     name: CC BY 4.0
     url: https://creativecommons.org/licenses/by/4.0/
