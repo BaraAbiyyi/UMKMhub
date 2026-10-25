@@ -408,4 +408,5 @@ Route::prefix('v1')->name('v1.')->group(function () use (
     Route::get('/customers/{customer}/orders', [CustomerController::class, 'customerOrders']);
 
     Route::get('/stocks', [StockController::class, 'index']);
+    Route::patch('/stocks/{stock}', [StockController::class, 'update']);
 });
