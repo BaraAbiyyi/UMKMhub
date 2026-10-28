@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\StockConflictException;
 use App\Models\Product;
 use App\Models\Stock;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -24,6 +25,7 @@ class ProductService
                     ->orWhere('description', 'like', "%{$term}%"));
             })
             ->orderBy($column, $direction)
+            ->orderBy('id')
             ->paginate((int) ($filters['per_page'] ?? 15))
             ->withQueryString();
     }
@@ -33,6 +35,7 @@ class ProductService
         return DB::transaction(function () use ($data) {
             $product = Product::create($data);
             Stock::create(['product_id' => $product->id, 'quantity' => 0, 'version' => 1]);
+
             return $product->load(['category', 'stock']);
         });
     }
@@ -40,11 +43,16 @@ class ProductService
     public function update(Product $product, array $data): Product
     {
         $product->update($data);
+
         return $product->load(['category', 'stock']);
     }
 
     public function delete(Product $product): void
     {
+        if ($product->orderItems()->exists()) {
+            throw new StockConflictException('Produk tidak dapat dihapus karena masih tercatat pada item pesanan.', 'PRODUCT_HAS_RELATIONS');
+        }
+
         $product->delete();
     }
 }

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Exceptions\StockConflictException;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Stock;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +20,8 @@ class OrderService
                 $product = Product::findOrFail($item['product_id']);
                 $stock = Stock::where('product_id', $product->id)->lockForUpdate()->first();
 
-                if (!$stock || $stock->quantity < $item['quantity']) {
-                    throw new StockConflictException("Stok tidak mencukupi untuk produk: {$product->name}");
+                if (! $stock || $stock->quantity < $item['quantity']) {
+                    throw new StockConflictException("Stok tidak mencukupi untuk produk: {$product->name}", 'INSUFFICIENT_STOCK');
                 }
 
                 $stock->decrement('quantity', $item['quantity']);
@@ -33,16 +32,16 @@ class OrderService
 
                 $itemsToCreate[] = [
                     'product_id' => $product->id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $product->price,
-                    'subtotal'   => $subtotal,
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
+                    'subtotal' => $subtotal,
                 ];
             }
 
             $order = Order::create([
-                'customer_id'  => $data['customer_id'],
+                'customer_id' => $data['customer_id'],
                 'total_amount' => $totalAmount,
-                'status'       => 'pending',
+                'status' => 'pending',
             ]);
 
             foreach ($itemsToCreate as $itemData) {
@@ -51,5 +50,12 @@ class OrderService
 
             return $order->load(['customer', 'items.product']);
         });
+    }
+
+    public function updateStatus(Order $order, string $status): Order
+    {
+        $order->update(['status' => $status]);
+
+        return $order->load(['customer', 'items.product']);
     }
 }

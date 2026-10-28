@@ -15,10 +15,10 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'category_id' => ['sometimes', 'integer', 'exists:categories,id'],
-            'name'        => ['sometimes', 'string', 'max:150'],
+            'name' => ['sometimes', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
-            'price'       => ['sometimes', 'numeric', 'min:0'],
-            'is_active'   => ['sometimes', 'boolean'],
+            'price' => ['sometimes', 'numeric', 'min:0'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

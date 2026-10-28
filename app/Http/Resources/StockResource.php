@@ -10,10 +10,10 @@ class StockResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'         => $this->id,
+            'id' => $this->id,
             'product_id' => $this->product_id,
-            'quantity'   => $this->quantity,
-            'version'    => $this->version,
+            'quantity' => $this->quantity,
+            'version' => $this->version,
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
     }

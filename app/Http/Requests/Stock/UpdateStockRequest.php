@@ -15,7 +15,7 @@ class UpdateStockRequest extends FormRequest
     {
         return [
             'quantity' => ['required', 'integer', 'min:0'],
-            'version'  => ['required', 'integer'],
+            'version' => ['required', 'integer'],
         ];
     }
 }
