@@ -5,14 +5,14 @@
 **Dosen Pengampu:** Zaenul Arif, S.Kom., M.Kom. (Universitas Harkat Negeri)  
 **Status Kepatuhan Kontrak:** **100% COMPLIANT — Sangat Baik / Skor 4**
 
-REST API profesional berbasis Laravel 11 dengan implementasi **Layered Architecture (Struktur Berlapis)**, **Optimistic Concurrency Control (OCC)**, **Atomic Database Transactions**, **Sanctum Bearer Authentication**, dan kepatuhan penuh terhadap spesifikasi **OpenAPI 3.1.0**.
+REST API profesional berbasis Laravel 13 dengan implementasi **Layered Architecture (Struktur Berlapis)**, **Optimistic Concurrency Control (OCC)**, **Atomic Database Transactions**, **Sanctum Bearer Authentication**, dan kepatuhan penuh terhadap spesifikasi **OpenAPI 3.1.0**.
 
 ---
 
 ## 1. Prasyarat Sistem
 
 Sebelum menjalankan aplikasi, pastikan sistem Anda memenuhi prasyarat berikut:
-- **PHP:** Versi 8.2 atau lebih baru (direkomendasikan PHP 8.2 / 8.3 / 8.5) dengan ekstensi `pdo_sqlite`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`.
+- **PHP:** Versi 8.3 atau lebih baru. dengan ekstensi `pdo_sqlite`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`.
 - **Composer:** Versi 2.x
 - **Database:** SQLite (default lokal terisolasi) atau MySQL 8.0+
 - **HTTP Client:** Postman v10+ atau Curl / VS Code REST Client
