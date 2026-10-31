@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "c1f7a28e-89a5-4f3b-bc83-4a6912389abc",
     "name": "UMKMhub REST API v1 (Final Release)",
-    "description": "Postman Collection pengujian lengkap seluruh endpoint REST API UMKMhub v1 sesuai kontrak OpenAPI 3.1.0 dan arsitektur berlapis Laravel.",
+    "description": "Postman Collection pengujian REST API UMKMhub v1. Menggunakan ID dinamis dari respons API agar tidak bergantung pada ID=1. Jalankan pada database yang sudah di-seed dan memiliki minimal satu produk, stok, dan customer.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -55,8 +55,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -64,8 +70,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -91,8 +102,14 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -100,8 +117,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -128,13 +150,23 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me"
+              ]
             }
           }
         },
@@ -156,13 +188,24 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
             }
           }
         }
@@ -192,11 +235,20 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
             }
           }
         },
@@ -218,9 +270,18 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -228,8 +289,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
             }
           }
         },
@@ -250,11 +315,21 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/categories/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "1"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "1"
+              ]
             }
           }
         },
@@ -276,9 +351,18 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -286,21 +370,26 @@
             },
             "url": {
               "raw": "{{baseUrl}}/categories/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "1"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "1"
+              ]
             }
           }
         },
         {
-          "name": "Categories - Delete Category (200 OK)",
+          "name": "Categories - Delete Category Blocked When In Use (409 Conflict)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "pm.test('Status code is 409 Conflict when category is still referenced', function () {",
+                  "    pm.response.to.have.status(409);",
                   "});"
                 ]
               }
@@ -309,13 +398,24 @@
           "request": {
             "method": "DELETE",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/categories/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "1"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories",
+                "1"
+              ]
             }
           }
         }
@@ -332,13 +432,13 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
                   "pm.test('Envelope contains data, links, and meta', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('data').that.is.an('array');",
                   "    pm.expect(jsonData).to.have.property('meta');",
+                  "    pm.expect(jsonData.data.length).to.be.above(0, 'Seed at least one product before running this collection');",
+                  "    pm.collectionVariables.set('testProductId', jsonData.data[0].id);",
                   "});"
                 ]
               }
@@ -346,11 +446,20 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/products",
-              "host": ["{{baseUrl}}"],
-              "path": ["products"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ]
             }
           }
         },
@@ -375,12 +484,26 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/products?per_page=500",
-              "host": ["{{baseUrl}}"],
-              "path": ["products"],
-              "query": [{ "key": "per_page", "value": "500" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "500"
+                }
+              ]
             }
           }
         },
@@ -392,12 +515,12 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "pm.test('Product data created successfully', function () {",
+                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Product data created successfully and ID stored', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.data).to.have.property('name', 'Keripik Singkong Pedas');",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.collectionVariables.set('createdProductId', jsonData.data.id);",
                   "});"
                 ]
               }
@@ -406,9 +529,18 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -416,8 +548,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/products",
-              "host": ["{{baseUrl}}"],
-              "path": ["products"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ]
             }
           }
         },
@@ -438,11 +574,21 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/products/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "1"]
+              "raw": "{{baseUrl}}/products/{{testProductId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{testProductId}}"
+              ]
             }
           }
         },
@@ -464,46 +610,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"price\": 16000\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/products/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "1"]
-            }
-          }
-        },
-        {
-          "name": "Products - Delete Product (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "1"]
+              "raw": "{{baseUrl}}/products/{{testProductId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{testProductId}}"
+              ]
             }
           }
         }
@@ -520,12 +652,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Stocks collection returned with pagination', function () {",
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Capture a real stock record for OCC tests', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array').that.is.not.empty;",
+                  "    var stock = jsonData.data[0];",
+                  "    pm.expect(stock).to.have.property('id');",
+                  "    pm.expect(stock).to.have.property('version');",
+                  "    pm.collectionVariables.set('testStockId', stock.id);",
+                  "    pm.collectionVariables.set('stockInitialVersion', stock.version);",
                   "});"
                 ]
               }
@@ -534,14 +669,29 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/stocks?per_page=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["stocks"],
-              "query": [{ "key": "per_page", "value": "10" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stocks"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "10"
+                }
+              ]
             }
           }
         },
@@ -553,12 +703,12 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
                   "pm.test('Stock updated successfully', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.quantity).to.eql(60);",
+                  "    pm.expect(jsonData.data).to.have.property('quantity', 60);",
+                  "    pm.expect(jsonData.data).to.have.property('version');",
+                  "    pm.collectionVariables.set('stockUpdatedVersion', jsonData.data.version);",
                   "});"
                 ]
               }
@@ -567,18 +717,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"quantity\": 60,\n  \"version\": 1\n}"
+              "raw": "{\n  \"quantity\": 60,\n  \"version\": {{stockInitialVersion}}\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/stocks/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["stocks", "1"]
+              "raw": "{{baseUrl}}/stocks/{{testStockId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stocks",
+                "{{testStockId}}"
+              ]
             }
           }
         },
@@ -600,18 +764,32 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"quantity\": 70,\n  \"version\": 1\n}"
+              "raw": "{\n  \"quantity\": 70,\n  \"version\": {{stockInitialVersion}}\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/stocks/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["stocks", "1"]
+              "raw": "{{baseUrl}}/stocks/{{testStockId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stocks",
+                "{{testStockId}}"
+              ]
             }
           }
         }
@@ -628,8 +806,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Capture a seeded customer for order tests', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array').that.is.not.empty;",
+                  "    pm.collectionVariables.set('testCustomerId', jsonData.data[0].id);",
                   "});"
                 ]
               }
@@ -638,13 +819,23 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
               "raw": "{{baseUrl}}/customers",
-              "host": ["{{baseUrl}}"],
-              "path": ["customers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers"
+              ]
             }
           }
         },
@@ -666,9 +857,18 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -676,8 +876,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/customers",
-              "host": ["{{baseUrl}}"],
-              "path": ["customers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers"
+              ]
             }
           }
         },
@@ -699,13 +903,24 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
-              "raw": "{{baseUrl}}/customers/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["customers", "1"]
+              "raw": "{{baseUrl}}/customers/{{testCustomerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{testCustomerId}}"
+              ]
             }
           }
         },
@@ -727,13 +942,25 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
-              "raw": "{{baseUrl}}/customers/1/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["customers", "1", "orders"]
+              "raw": "{{baseUrl}}/customers/{{testCustomerId}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{testCustomerId}}",
+                "orders"
+              ]
             }
           }
         }
@@ -750,12 +977,12 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "pm.test('Order created with pending status', function () {",
+                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Order created with pending status and ID stored', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data.status).to.eql('pending');",
+                  "    pm.expect(jsonData.data).to.have.property('status', 'pending');",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.collectionVariables.set('createdOrderId', jsonData.data.id);",
                   "});"
                 ]
               }
@@ -764,18 +991,31 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_id\": 1,\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2\n    }\n  ]\n}"
+              "raw": "{\n  \"customer_id\": {{testCustomerId}},\n  \"items\": [\n    {\n      \"product_id\": {{testProductId}},\n      \"quantity\": 2\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["orders"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
             }
           }
         },
@@ -797,18 +1037,31 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_id\": 1,\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 99999\n    }\n  ]\n}"
+              "raw": "{\n  \"customer_id\": {{testCustomerId}},\n  \"items\": [\n    {\n      \"product_id\": {{testProductId}},\n      \"quantity\": 99999\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["orders"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
             }
           }
         },
@@ -830,13 +1083,24 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "url": {
-              "raw": "{{baseUrl}}/orders/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["orders", "1"]
+              "raw": "{{baseUrl}}/orders/{{createdOrderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{createdOrderId}}"
+              ]
             }
           }
         },
@@ -858,18 +1122,33 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"completed\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/orders/1/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["orders", "1", "status"]
+              "raw": "{{baseUrl}}/orders/{{createdOrderId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{createdOrderId}}",
+                "status"
+              ]
             }
           }
         }
@@ -895,11 +1174,20 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/nonexistent-endpoint-test",
-              "host": ["{{baseUrl}}"],
-              "path": ["nonexistent-endpoint-test"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "nonexistent-endpoint-test"
+              ]
             }
           }
         },
@@ -920,11 +1208,59 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/stocks",
-              "host": ["{{baseUrl}}"],
-              "path": ["stocks"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stocks"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Products - Delete Product (204 No Content)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{createdProductId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{createdProductId}}"
+              ]
             }
           }
         }
