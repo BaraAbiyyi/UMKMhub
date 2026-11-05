@@ -10,12 +10,24 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['order_id', 'product_id', 'quantity', 'price', 'subtotal'];
-
-    protected $casts = [
-        'price' => 'float',
-        'subtotal' => 'float',
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'product_name',
+        'unit_price',
+        'quantity',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'unit_price' => 'integer',
+            'quantity' => 'integer',
+        ];
+    }
 
     public function order(): BelongsTo
     {
@@ -25,5 +37,10 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function subtotal(): int
+    {
+        return $this->unit_price * $this->quantity;
     }
 }

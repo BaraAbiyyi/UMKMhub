@@ -1,14 +1,23 @@
 {
   "info": {
-    "_postman_id": "c1f7a28e-89a5-4f3b-bc83-4a6912389abc",
-    "name": "UMKMhub REST API v1 (Final Release)",
-    "description": "Postman Collection pengujian REST API UMKMhub v1. Menggunakan ID dinamis dari respons API agar tidak bergantung pada ID=1. Jalankan pada database yang sudah di-seed dan memiliki minimal satu produk, stok, dan customer.",
+    "name": "UMKMHub API v2 (Marketplace Simulasi)",
+    "description": "Koleksi Postman UMKMHub v2. Jalankan request login untuk menyimpan token ke variabel koleksi. Variabel id perlu disesuaikan dengan data hasil seeder. Semua pembayaran bersifat simulasi.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://127.0.0.1:8000/api/v1",
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
       "type": "string"
     },
     {
@@ -17,41 +26,72 @@
       "type": "string"
     },
     {
-      "key": "adminEmail",
-      "value": "admin@umkmhub.id",
+      "key": "superadmin_email",
+      "value": "superadmin@umkmhub.id",
       "type": "string"
     },
     {
-      "key": "adminPassword",
+      "key": "umkm_email",
+      "value": "sari@umkmhub.id",
+      "type": "string"
+    },
+    {
+      "key": "customer_email",
+      "value": "dimas@gmail.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
       "value": "password123",
+      "type": "string"
+    },
+    {
+      "key": "store_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "stock_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "cart_item_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "address_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "01. Authentication",
+      "name": "Autentikasi",
       "item": [
         {
-          "name": "Auth - Login Berhasil (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Response matches AuthToken schema & stores token', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.have.property('access_token');",
-                  "    pm.expect(jsonData.data).to.have.property('token_type', 'Bearer');",
-                  "    pm.collectionVariables.set('token', jsonData.data.access_token);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "POST Registrasi pengguna baru (Pembeli / Customer)",
           "request": {
             "method": "POST",
             "header": [
@@ -64,41 +104,31 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/auth/login",
+              "raw": "{{base_url}}/v1/auth/register",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
+                "v1",
                 "auth",
-                "login"
+                "register"
               ]
+            },
+            "description": "Registrasi pengguna baru (Pembeli / Customer)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sari Rahayu\",\n  \"email\": \"sari@umkmhub.id\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
         {
-          "name": "Auth - Login Gagal Kredensial Salah (401 Unauthorized)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 401 Unauthorized', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "pm.test('Response contains error message', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('message');",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "POST Login untuk semua peran (Superadmin, Admin UMKM, Customer)",
           "request": {
             "method": "POST",
             "header": [
@@ -111,128 +141,69 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"passwordsalah123\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/auth/login",
+              "raw": "{{base_url}}/v1/auth/login",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
+                "v1",
                 "auth",
                 "login"
               ]
+            },
+            "description": "Login untuk semua peran (Superadmin, Admin UMKM, Customer)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sari@umkmhub.id\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        },
-        {
-          "name": "Auth - Get User Profile / Profile Saya (200 OK)",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Returns authenticated user details', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('data');",
-                  "    pm.expect(jsonData.data).to.have.property('email');",
-                  "});"
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.access_token) {",
+                  "    pm.collectionVariables.set('token', body.data.access_token);",
+                  "}"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me"
-              ]
-            }
-          }
+          ]
         },
         {
-          "name": "Auth - Logout (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "POST Logout dan hapus token aktif",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/auth/logout",
+              "raw": "{{base_url}}/v1/auth/logout",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
+                "v1",
                 "auth",
                 "logout"
               ]
-            }
+            },
+            "description": "Logout dan hapus token aktif"
           }
-        }
-      ]
-    },
-    {
-      "name": "02. Categories",
-      "item": [
+        },
         {
-          "name": "Categories - Get All Categories (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Data is an array of categories', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.be.an('array');",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "GET Profil pengguna yang sedang terautentikasi",
           "request": {
             "method": "GET",
             "header": [
@@ -242,77 +213,53 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/categories",
+              "raw": "{{base_url}}/v1/me",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "categories"
+                "v1",
+                "me"
               ]
-            }
+            },
+            "description": "Profil pengguna yang sedang terautentikasi"
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Pendaftaran UMKM",
+      "item": [
         {
-          "name": "Categories - Create Category (201 Created)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "POST /v1/store-applications",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Makanan Ringan\",\n  \"slug\": \"makanan-ringan\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/categories",
+              "raw": "{{base_url}}/v1/store-applications",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "categories"
+                "v1",
+                "store-applications"
               ]
-            }
+            },
+            "description": ""
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Toko Publik",
+      "item": [
         {
-          "name": "Categories - Get Category Detail (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "GET /v1/stores",
           "request": {
             "method": "GET",
             "header": [
@@ -322,128 +269,282 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/categories/1",
+              "raw": "{{base_url}}/v1/stores",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "categories",
-                "1"
+                "v1",
+                "stores"
               ]
-            }
+            },
+            "description": ""
           }
         },
         {
-          "name": "Categories - Update Category (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "GET /v1/stores/{store}",
           "request": {
-            "method": "PATCH",
+            "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Camilan & Keripik\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/categories/1",
+              "raw": "{{base_url}}/v1/stores/{{store_id}}",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "categories",
-                "1"
+                "v1",
+                "stores",
+                "{{store_id}}"
               ]
-            }
+            },
+            "description": ""
           }
         },
         {
-          "name": "Categories - Delete Category Blocked When In Use (409 Conflict)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 409 Conflict when category is still referenced', function () {",
-                  "    pm.response.to.have.status(409);",
-                  "});"
-                ]
+          "name": "GET /v1/stores/{store}/products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
               }
-            }
-          ],
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/stores/{{store_id}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "stores",
+                "{{store_id}}",
+                "products"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Toko Saya",
+      "item": [
+        {
+          "name": "GET /v1/my-stores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /v1/my-stores/{store}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PUT /v1/my-stores/{store}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /v1/my-stores/{store}/stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
+                "stats"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Produk Toko",
+      "item": [
+        {
+          "name": "GET /v1/my-stores/{store}/products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
+                "products"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/my-stores/{store}/products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
+                "products"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PUT /v1/my-stores/{store}/products/{product}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/products/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
+                "products",
+                "{{product_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "DELETE /v1/my-stores/{store}/products/{product}",
           "request": {
             "method": "DELETE",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/categories/1",
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/products/{{product_id}}",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "categories",
-                "1"
+                "v1",
+                "my-stores",
+                "{{store_id}}",
+                "products",
+                "{{product_id}}"
               ]
-            }
+            },
+            "description": ""
           }
         }
       ]
     },
     {
-      "name": "03. Products",
+      "name": "Stok Toko",
       "item": [
         {
-          "name": "Products - Get All Products (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Envelope contains data, links, and meta', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('data').that.is.an('array');",
-                  "    pm.expect(jsonData).to.have.property('meta');",
-                  "    pm.expect(jsonData.data.length).to.be.above(0, 'Seed at least one product before running this collection');",
-                  "    pm.collectionVariables.set('testProductId', jsonData.data[0].id);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "GET /v1/my-stores/{store}/stocks",
           "request": {
             "method": "GET",
             "header": [
@@ -453,672 +554,91 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/products",
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/stocks",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "products"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Products - Pagination Max Limit Validation (422 Unprocessable Content)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 422 Unprocessable Content', function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test('Validation error specifies per_page limit', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('errors');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products?per_page=500",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ],
-              "query": [
-                {
-                  "key": "per_page",
-                  "value": "500"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Products - Create Product (201 Created)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
-                  "pm.test('Product data created successfully and ID stored', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.have.property('name', 'Keripik Singkong Pedas');",
-                  "    pm.expect(jsonData.data).to.have.property('id');",
-                  "    pm.collectionVariables.set('createdProductId', jsonData.data.id);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Keripik Singkong Pedas\",\n  \"description\": \"Keripik singkong balado pedas renyah 250g\",\n  \"price\": 15000,\n  \"is_active\": true\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Products - Get Product Detail (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/{{testProductId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{testProductId}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Products - Update Product (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"price\": 16000\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products/{{testProductId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{testProductId}}"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "04. Stocks",
-      "item": [
-        {
-          "name": "Stocks - Get Stock List (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Capture a real stock record for OCC tests', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.be.an('array').that.is.not.empty;",
-                  "    var stock = jsonData.data[0];",
-                  "    pm.expect(stock).to.have.property('id');",
-                  "    pm.expect(stock).to.have.property('version');",
-                  "    pm.collectionVariables.set('testStockId', stock.id);",
-                  "    pm.collectionVariables.set('stockInitialVersion', stock.version);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/stocks?per_page=10",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
                 "stocks"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PATCH /v1/my-stores/{store}/stocks/{stock}",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/stocks/{{stock_id}}",
+              "host": [
+                "{{base_url}}"
               ],
-              "query": [
-                {
-                  "key": "per_page",
-                  "value": "10"
+              "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
+                "stocks",
+                "{{stock_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1,\n  \"version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Stocks - Update Stock with Optimistic Concurrency Control (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Stock updated successfully', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.have.property('quantity', 60);",
-                  "    pm.expect(jsonData.data).to.have.property('version');",
-                  "    pm.collectionVariables.set('stockUpdatedVersion', jsonData.data.version);",
-                  "});"
-                ]
               }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 60,\n  \"version\": {{stockInitialVersion}}\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/stocks/{{testStockId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "stocks",
-                "{{testStockId}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Stocks - Version Mismatch OCC Conflict (409 Conflict)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 409 Conflict', function () {",
-                  "    pm.response.to.have.status(409);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 70,\n  \"version\": {{stockInitialVersion}}\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/stocks/{{testStockId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "stocks",
-                "{{testStockId}}"
-              ]
             }
           }
         }
       ]
     },
     {
-      "name": "05. Customers",
+      "name": "Pesanan Toko",
       "item": [
         {
-          "name": "Customers - Get Customers List (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Capture a seeded customer for order tests', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.be.an('array').that.is.not.empty;",
-                  "    pm.collectionVariables.set('testCustomerId', jsonData.data[0].id);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "GET /v1/my-stores/{store}/orders",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/customers",
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/orders",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "customers"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Customers - Create Customer (201 Created)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"email\": \"budi@example.com\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jl. Merdeka No. 12, Tegal\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/customers",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "customers"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Customers - Get Customer Detail (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/customers/{{testCustomerId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "customers",
-                "{{testCustomerId}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Customers - Get Customer Orders History (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/customers/{{testCustomerId}}/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "customers",
-                "{{testCustomerId}}",
+                "v1",
+                "my-stores",
+                "{{store_id}}",
                 "orders"
               ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "06. Orders",
-      "item": [
-        {
-          "name": "Orders - Checkout / Create Order (201 Created)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
-                  "pm.test('Order created with pending status and ID stored', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.have.property('status', 'pending');",
-                  "    pm.expect(jsonData.data).to.have.property('id');",
-                  "    pm.collectionVariables.set('createdOrderId', jsonData.data.id);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"customer_id\": {{testCustomerId}},\n  \"items\": [\n    {\n      \"product_id\": {{testProductId}},\n      \"quantity\": 2\n    }\n  ]\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders"
-              ]
-            }
+            "description": ""
           }
         },
         {
-          "name": "Orders - Checkout Insufficient Stock Failure (409 Conflict)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 409 Conflict', function () {",
-                  "    pm.response.to.have.status(409);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"customer_id\": {{testCustomerId}},\n  \"items\": [\n    {\n      \"product_id\": {{testProductId}},\n      \"quantity\": 99999\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Orders - Get Order Detail (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/orders/{{createdOrderId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders",
-                "{{createdOrderId}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Orders - Update Order Status (200 OK)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200 OK', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "PATCH /v1/my-stores/{store}/orders/{order}/status",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1129,49 +649,41 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"completed\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/orders/{{createdOrderId}}/status",
+              "raw": "{{base_url}}/v1/my-stores/{{store_id}}/orders/{{order_id}}/status",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
+                "v1",
+                "my-stores",
+                "{{store_id}}",
                 "orders",
-                "{{createdOrderId}}",
+                "{{order_id}}",
                 "status"
               ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"pending_payment\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }
       ]
     },
     {
-      "name": "07. Global Errors",
+      "name": "Kategori",
       "item": [
         {
-          "name": "Error - Resource Not Found (404 Not Found)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 404 Not Found', function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "GET /v1/categories",
           "request": {
             "method": "GET",
             "header": [
@@ -1181,87 +693,812 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/nonexistent-endpoint-test",
+              "raw": "{{base_url}}/v1/categories",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "nonexistent-endpoint-test"
+                "v1",
+                "categories"
               ]
-            }
+            },
+            "description": ""
           }
         },
         {
-          "name": "Error - Method Not Allowed (405 Method Not Allowed)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 405 Method Not Allowed', function () {",
-                  "    pm.response.to.have.status(405);",
-                  "});"
-                ]
-              }
-            }
-          ],
+          "name": "POST /v1/categories",
           "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/stocks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "stocks"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Products - Delete Product (204 No Content)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 204 No Content', function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
+            "method": "POST",
             "header": [
               {
                 "key": "Accept",
                 "value": "application/json"
               },
               {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/products/{{createdProductId}}",
+              "raw": "{{base_url}}/v1/categories",
               "host": [
-                "{{baseUrl}}"
+                "{{base_url}}"
               ],
               "path": [
-                "products",
-                "{{createdProductId}}"
+                "v1",
+                "categories"
               ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sari Rahayu\",\n  \"description\": \"Deskripsi contoh\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
+          }
+        },
+        {
+          "name": "GET /v1/categories/{category}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PUT /v1/categories/{category}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sari Rahayu\",\n  \"description\": \"Deskripsi contoh\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /v1/categories/{category}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Produk",
+      "item": [
+        {
+          "name": "GET /v1/products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "products"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /v1/products/{product}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/products/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "products",
+                "{{product_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Keranjang",
+      "item": [
+        {
+          "name": "GET /v1/cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/cart",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "cart"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/cart/items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/cart/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "cart",
+                "items"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /v1/cart/items/{cartItem}",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/cart/items/{{cart_item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "cart",
+                "items",
+                "{{cart_item_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /v1/cart/items/{cartItem}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/cart/items/{{cart_item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "cart",
+                "items",
+                "{{cart_item_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alamat",
+      "item": [
+        {
+          "name": "GET /v1/addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/addresses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "addresses"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/addresses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/addresses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "addresses"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"string\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jl. Semanggi Timur 12\",\n  \"city\": \"Malang\",\n  \"is_default\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /v1/addresses/{address}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/addresses/{{address_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "addresses",
+                "{{address_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"string\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jl. Semanggi Timur 12\",\n  \"city\": \"Malang\",\n  \"is_default\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /v1/addresses/{address}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/addresses/{{address_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "addresses",
+                "{{address_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pesanan & Pembayaran",
+      "item": [
+        {
+          "name": "POST /v1/orders/checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/orders/checkout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "orders",
+                "checkout"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /v1/orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "orders"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/orders/{order}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/orders/{{order_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "cancel"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/orders/{order}/simulate-payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/orders/{{order_id}}/simulate-payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "simulate-payment"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"result\": \"success\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /v1/orders/{order}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Superadmin",
+      "item": [
+        {
+          "name": "GET /v1/admin/stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "stats"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/admin/stores/{store}/approve",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/stores/{{store_id}}/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "stores",
+                "{{store_id}}",
+                "approve"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/admin/stores/{store}/reject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/stores/{{store_id}}/reject",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "stores",
+                "{{store_id}}",
+                "reject"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejection_reason\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /v1/admin/stores/{store}/suspend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/stores/{{store_id}}/suspend",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "stores",
+                "{{store_id}}",
+                "suspend"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "POST /v1/admin/stores/{store}/activate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/stores/{{store_id}}/activate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "stores",
+                "{{store_id}}",
+                "activate"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /v1/admin/stores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/stores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "stores"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /v1/admin/store-applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/store-applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "store-applications"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /v1/admin/users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "users"
+              ]
+            },
+            "description": ""
           }
         }
       ]

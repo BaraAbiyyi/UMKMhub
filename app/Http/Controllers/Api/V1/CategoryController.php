@@ -38,9 +38,7 @@ class CategoryController extends Controller
 
     public function update(UpdateCategoryRequest $request, Category $category): CategoryResource
     {
-        $updated = $this->service->update($category, $request->validated());
-
-        return new CategoryResource($updated);
+        return new CategoryResource($this->service->update($category, $request->validated()));
     }
 
     public function destroy(Category $category): Response

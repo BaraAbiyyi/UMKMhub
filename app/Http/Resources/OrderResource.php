@@ -11,16 +11,29 @@ class OrderResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'customer_id' => $this->customer_id,
-            'total_amount' => (float) $this->total_amount,
-            'status' => $this->status,
-            'items' => $this->items->map(fn ($item) => [
-                'id' => $item->id,
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => (float) $item->price,
-                'subtotal' => (float) $item->subtotal,
+            'code' => $this->code,
+            'status' => $this->status->value,
+            'status_label' => $this->status->label(),
+            'subtotal' => (int) $this->subtotal,
+            'shipping_cost' => (int) $this->shipping_cost,
+            'total' => (int) $this->total,
+            'shipping_address' => $this->shipping_address,
+            'expires_at' => $this->expires_at?->toIso8601String(),
+            'can_cancel' => $this->canBeCancelledByBuyer(),
+            'store' => $this->whenLoaded('store', fn () => [
+                'id' => $this->store->id,
+                'name' => $this->store->name,
+                'slug' => $this->store->slug,
             ]),
+            'buyer' => $this->whenLoaded('user', fn () => [
+                'id' => $this->user->id,
+                'name' => $this->user->name,
+            ]),
+            'items' => OrderItemResource::collection($this->whenLoaded('items')),
+            'payment' => $this->whenLoaded('payment', fn () => $this->payment ? [
+                'status' => $this->payment->status->value,
+                'paid_at' => $this->payment->paid_at?->toIso8601String(),
+            ] : null),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

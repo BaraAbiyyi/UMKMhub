@@ -11,9 +11,11 @@ return new class extends Migration
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->integer('quantity')->default(0);
-            $table->integer('version')->default(1);
+            $table->unsignedInteger('quantity')->default(0);
+            $table->unsignedInteger('version')->default(1);
             $table->timestamps();
+
+            $table->index('product_id');
         });
     }
 

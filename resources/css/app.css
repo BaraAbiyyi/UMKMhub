@@ -4,6 +4,93 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-brand: #5e1c23;
+    --color-brand-soft: #f3e9ea;
+    --color-ink: #2b2420;
+    --color-ink-muted: #605246;
+    --color-mist: #b1c7d4;
+    --color-mist-deep: #849aad;
+    --color-canvas: #f4f7f9;
+    --color-sand: #a1947f;
+    --color-sand-soft: #efebe4;
+    --color-ok: #2f6f4e;
+
+    --radius-card: 16px;
+    --radius-control: 12px;
+
+    --shadow-card: 0 1px 2px rgba(43, 36, 32, 0.06);
+}
+
+@layer base {
+    body {
+        @apply bg-canvas text-ink antialiased;
+    }
+
+    :focus-visible {
+        @apply outline-none ring-2 ring-brand ring-offset-2;
+    }
+}
+
+@layer components {
+    .btn {
+        @apply inline-flex h-11 items-center justify-center gap-2 rounded-control px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-primary {
+        @apply inline-flex h-11 items-center justify-center gap-2 rounded-control bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-secondary {
+        @apply inline-flex h-11 items-center justify-center gap-2 rounded-control border border-mist-deep bg-white px-4 text-sm font-semibold text-ink transition hover:bg-mist/20 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-danger-ghost {
+        @apply inline-flex h-11 items-center justify-center gap-2 rounded-control px-4 text-sm font-semibold text-brand transition hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .card {
+        @apply rounded-card border border-mist bg-white shadow-card;
+    }
+
+    .field {
+        @apply h-11 w-full rounded-control border border-mist bg-white px-3 text-sm text-ink placeholder:text-ink-muted/60 focus:border-mist-deep focus:outline-none focus:ring-2 focus:ring-brand/30;
+    }
+
+    .label {
+        @apply mb-1 block text-sm font-medium text-ink;
+    }
+
+    .chip {
+        @apply inline-flex items-center gap-1 rounded-full border border-mist px-3 py-1 text-sm text-ink hover:border-mist-deep;
+    }
+
+    .chip-active {
+        @apply border-brand bg-brand-soft text-brand;
+    }
+
+    .table-base {
+        @apply w-full text-left text-sm;
+    }
+
+    .table-base thead {
+        @apply bg-canvas text-xs uppercase tracking-wide text-ink-muted;
+    }
+
+    .table-base th,
+    .table-base td {
+        @apply px-4 py-3;
+    }
+
+    .table-base tbody tr {
+        @apply border-t border-mist/70 hover:bg-mist/20;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+    }
 }

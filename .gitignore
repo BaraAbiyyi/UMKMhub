@@ -38,4 +38,6 @@ TUGAS_*.md
 /.claude/
 /.cursor/
 /.kiro/
+/.opencode/
+/models.json
 AGENTS.md

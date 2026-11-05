@@ -16,4 +16,14 @@ class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function stores(): HasMany
+    {
+        return $this->hasMany(Store::class, 'category_id');
+    }
+
+    public function isInUse(): bool
+    {
+        return $this->products()->exists() || $this->stores()->exists();
+    }
 }

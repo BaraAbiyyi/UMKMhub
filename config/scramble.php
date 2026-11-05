@@ -1,6 +1,7 @@
 <?php
 
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
+use Dedoc\Scramble\OpenApiVersion;
 
 return [
     /*
@@ -44,22 +45,22 @@ return [
     /*
      * OpenAPI version of the resulting document.
      */
-    'openapi_version' => \Dedoc\Scramble\OpenApiVersion::V3_1,
+    'openapi_version' => OpenApiVersion::V3_1,
 
     'info' => [
         /*
          * API version.
          */
-        'version' => env('API_VERSION', '0.0.1'),
+        'version' => env('API_VERSION', '2.0.0'),
 
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => '',
+        'description' => 'Dokumentasi RESTful API UMKMHub v2: marketplace multi-toko dengan pembayaran simulasi, keranjang lintas toko, dan stok dengan Optimistic Concurrency Control (OCC).',
     ],
 
     'ui' => [
-        'title' => null,
+        'title' => 'UMKMHub API v2 Documentation',
     ],
 
     /*
@@ -78,7 +79,7 @@ return [
          */
         'elements' => [
             'view' => 'scramble::docs',
-            'theme' => 'dark',
+            'theme' => 'light',
             'hideTryIt' => false,
             'hideSchemas' => false,
             'logo' => '',

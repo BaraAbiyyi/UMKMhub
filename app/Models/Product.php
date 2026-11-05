@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,12 +13,31 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'name', 'description', 'price', 'is_active'];
-
-    protected $casts = [
-        'price' => 'float',
-        'is_active' => 'boolean',
+    protected $fillable = [
+        'store_id',
+        'category_id',
+        'name',
+        'description',
+        'price',
+        'image_path',
+        'is_active',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'price' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
 
     public function category(): BelongsTo
     {
@@ -32,5 +52,12 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /** Scope: hanya produk aktif dari toko yang approved dan tidak suspend. */
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->whereHas('store', fn ($q) => $q->where('status', 'approved'));
     }
 }
