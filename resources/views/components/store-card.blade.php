@@ -1,7 +1,7 @@
 @props(['store'])
 
 @php
-    $logo = $store->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($store->logo_path) : null;
+    $logo = $store->logo_url;
 @endphp
 
 <article class="group relative flex flex-col justify-between rounded-2xl border border-gray-200/80 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">

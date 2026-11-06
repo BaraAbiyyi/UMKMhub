@@ -6,7 +6,7 @@
     @php
         $stock = (int) ($product->stock->quantity ?? 0);
         $threshold = (int) config('umkmhub.low_stock_threshold');
-        $image = $product->image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($product->image_path) : null;
+        $image = $product->image_url;
     @endphp
 
     <div class="mx-auto max-w-6xl px-4 py-8">

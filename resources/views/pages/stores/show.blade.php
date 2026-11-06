@@ -3,7 +3,7 @@
 @section('title', $store->name)
 
 @section('content')
-    @php $logo = $store->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($store->logo_path) : null; @endphp
+    @php $logo = $store->logo_url; @endphp
 
     <div class="border-b border-mist bg-white">
         <div class="mx-auto max-w-6xl px-4 py-8">

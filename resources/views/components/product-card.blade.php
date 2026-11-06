@@ -2,28 +2,7 @@
 
 @php
     $stock = (int) ($product->stock->quantity ?? 0);
-    $image = null;
-    if ($product->image_path) {
-        if (filter_var($product->image_path, FILTER_VALIDATE_URL)) {
-            $image = $product->image_path;
-        } elseif (file_exists(public_path($product->image_path))) {
-            $image = asset($product->image_path);
-        } elseif (file_exists(public_path('storage/' . $product->image_path))) {
-            $image = asset('storage/' . $product->image_path);
-        } elseif (file_exists(public_path('images/' . $product->image_path))) {
-            $image = asset('images/' . $product->image_path);
-        } else {
-            $image = \Illuminate\Support\Facades\Storage::disk('public')->url($product->image_path);
-        }
-    }
-    if (!$image) {
-        $lowerName = strtolower($product->name ?? '');
-        if (str_contains($lowerName, 'drip')) $image = asset('images/products/drip-coffee.jpg');
-        elseif (str_contains($lowerName, 'arabika')) $image = asset('images/products/kopi-arabika.jpg');
-        elseif (str_contains($lowerName, 'robusta')) $image = asset('images/products/kopi-robusta.jpg');
-        elseif (str_contains($lowerName, 'singkong')) $image = asset('images/products/keripik-singkong.jpg');
-        elseif (str_contains($lowerName, 'tempe')) $image = asset('images/products/keripik-tempe.jpg');
-    }
+    $image = $product->image_url;
 @endphp
 
 <article class="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">

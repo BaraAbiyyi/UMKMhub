@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Store extends Model
@@ -74,6 +75,27 @@ class Store extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (! $this->logo_path) {
+            return null;
+        }
+
+        if (filter_var($this->logo_path, FILTER_VALIDATE_URL)) {
+            return $this->logo_path;
+        }
+
+        if (file_exists(public_path($this->logo_path))) {
+            return asset($this->logo_path);
+        }
+
+        if (file_exists(public_path('storage/'.$this->logo_path))) {
+            return asset('storage/'.$this->logo_path);
+        }
+
+        return Storage::disk('public')->url($this->logo_path);
     }
 
     public function isApproved(): bool

@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class StoreResource extends JsonResource
 {
@@ -15,7 +14,7 @@ class StoreResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'logo_url' => $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null,
+            'logo_url' => $this->logo_url,
             'city' => $this->city,
             'address' => $this->when($this->owner_id === $request->user()?->id || $request->user()?->isSuperadmin(), $this->address),
             'phone' => $this->when($this->owner_id === $request->user()?->id || $request->user()?->isSuperadmin(), $this->phone),

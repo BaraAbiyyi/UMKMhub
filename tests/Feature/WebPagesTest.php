@@ -54,6 +54,14 @@ class WebPagesTest extends TestCase
         $this->get('/daftar-umkm')->assertOk()->assertSee('Daftarkan UMKM');
     }
 
+    public function test_inactive_product_returns_404(): void
+    {
+        [$store, $product] = $this->approvedStoreWithProduct();
+        $product->update(['is_active' => false]);
+
+        $this->get('/produk/'.$product->id)->assertNotFound();
+    }
+
     public function test_customer_pages_render_with_cart_and_order(): void
     {
         $customer = User::factory()->customer()->create();
