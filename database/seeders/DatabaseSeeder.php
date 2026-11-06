@@ -18,6 +18,7 @@ use App\Models\Stock;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -127,6 +128,11 @@ class DatabaseSeeder extends Seeder
         // ─────────────────────────────────────────────
         // 4. PRODUK & STOK — Toko Sari
         // ─────────────────────────────────────────────
+        if (is_dir(public_path('images/products'))) {
+            File::ensureDirectoryExists(storage_path('app/public/products'));
+            File::copyDirectory(public_path('images/products'), storage_path('app/public/products'));
+        }
+
         $products = [
             [
                 'store_id' => $tokoSari->id,

@@ -86,28 +86,7 @@
                 <div class="grid grid-cols-2 gap-3.5 sm:gap-4">
                     @forelse ($products->take(4) as $index => $product)
                         @php
-                            $productImage = null;
-                            if ($product->image_path) {
-                                if (filter_var($product->image_path, FILTER_VALIDATE_URL)) {
-                                    $productImage = $product->image_path;
-                                } elseif (file_exists(public_path($product->image_path))) {
-                                    $productImage = asset($product->image_path);
-                                } elseif (file_exists(public_path('storage/' . $product->image_path))) {
-                                    $productImage = asset('storage/' . $product->image_path);
-                                } elseif (file_exists(public_path('images/' . $product->image_path))) {
-                                    $productImage = asset('images/' . $product->image_path);
-                                } else {
-                                    $productImage = \Illuminate\Support\Facades\Storage::disk('public')->url($product->image_path);
-                                }
-                            }
-                            if (!$productImage) {
-                                $lowerName = strtolower($product->name ?? '');
-                                if (str_contains($lowerName, 'drip')) $productImage = asset('images/products/drip-coffee.jpg');
-                                elseif (str_contains($lowerName, 'arabika')) $productImage = asset('images/products/kopi-arabika.jpg');
-                                elseif (str_contains($lowerName, 'robusta')) $productImage = asset('images/products/kopi-robusta.jpg');
-                                elseif (str_contains($lowerName, 'singkong')) $productImage = asset('images/products/keripik-singkong.jpg');
-                                elseif (str_contains($lowerName, 'tempe')) $productImage = asset('images/products/keripik-tempe.jpg');
-                            }
+                            $productImage = $product->image_url;
                         @endphp
                         <a href="{{ route('products.show', $product) }}"
                            class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/90 bg-white/90 p-2.5 sm:p-3 shadow-md shadow-gray-200/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-rose-100 {{ $index % 2 === 1 ? 'sm:mt-8' : '' }}">

@@ -1,6 +1,6 @@
-# Panduan Desain UMKMHub v2
+# Panduan Desain UMKMhub
 
-Dokumen ini adalah turunan dari PRD UMKMHub v2 (bagian 9). Isinya: design token, komponen, spesifikasi halaman publik dan pembeli, serta dashboard Admin UMKM dan Superadmin.
+Dokumen ini adalah turunan dari PRD UMKMHub (bagian 9). Isinya: design token, komponen, spesifikasi halaman publik dan pembeli, serta dashboard Admin UMKM dan Superadmin.
 
 **Sumber desain**
 
@@ -12,7 +12,7 @@ Dokumen ini adalah turunan dari PRD UMKMHub v2 (bagian 9). Isinya: design token,
 
 **Teknologi:** Laravel 11, Blade, Tailwind CSS. Grafik memakai Chart.js (usulan; ringan dan mudah dipasang di Blade).
 
-**Batasan produk yang memengaruhi desain:** pembayaran hanya simulasi (tanpa payment gateway), tidak ada AI Assistant, ulasan, wishlist, diskon, atau chat pada v2.
+**Batasan produk yang memengaruhi desain:** pembayaran hanya simulasi (tanpa payment gateway), tidak ada AI Assistant, ulasan, wishlist, diskon, atau chat pada.
 
 ---
 
@@ -317,7 +317,7 @@ Tab status (Semua, Menunggu pembayaran, Sudah dibayar, Diproses, Dikirim, Selesa
 
 ### 5.10 Catatan kebutuhan API
 
-PRD v2 belum memuat endpoint statistik untuk dashboard Admin UMKM. Usulan penambahan: `GET /my-stores/{store_id}/stats?period=today|7d|month` yang mengembalikan total penjualan simulasi, jumlah pesanan baru, jumlah produk aktif, jumlah stok menipis, dan deret harian untuk dua grafik.
+PRD belum memuat endpoint statistik untuk dashboard Admin UMKM. Usulan penambahan: `GET /my-stores/{store_id}/stats?period=today|7d|month` yang mengembalikan total penjualan simulasi, jumlah pesanan baru, jumlah produk aktif, jumlah stok menipis, dan deret harian untuk dua grafik.
 
 ---
 

@@ -41,8 +41,8 @@
                                     @php $itemStock = (int) ($item->product->stock->quantity ?? 0); @endphp
                                     <li class="flex gap-3 p-4">
                                         <div class="h-16 w-16 shrink-0 overflow-hidden rounded-control bg-mist/30">
-                                            @if ($item->product->image_path)
-                                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($item->product->image_path) }}" alt="{{ $item->product->name }}" class="h-full w-full object-cover">
+                                            @if ($item->product->image_url)
+                                                <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="h-full w-full object-cover">
                                             @else
                                                 <div class="flex h-full items-center justify-center text-lg font-bold text-brand/40">{{ mb_substr($item->product->name, 0, 1) }}</div>
                                             @endif

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "UMKMHub API v2 (Marketplace Simulasi)",
-    "description": "Koleksi Postman UMKMHub v2. Jalankan request login untuk menyimpan token ke variabel koleksi. Variabel id perlu disesuaikan dengan data hasil seeder. Semua pembayaran bersifat simulasi.",
+    "description": "Koleksi Postman UMKMhub. Jalankan request login untuk menyimpan token ke variabel koleksi. Variabel id perlu disesuaikan dengan data hasil seeder. Semua pembayaran bersifat simulasi.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {

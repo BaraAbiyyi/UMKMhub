@@ -51,16 +51,16 @@ return [
         /*
          * API version.
          */
-        'version' => env('API_VERSION', '2.0.0'),
+        'version' => env('API_VERSION', '1.2.0'),
 
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => 'Dokumentasi RESTful API UMKMHub v2: marketplace multi-toko dengan pembayaran simulasi, keranjang lintas toko, dan stok dengan Optimistic Concurrency Control (OCC).',
+        'description' => 'Dokumentasi RESTful API UMKMHub: marketplace multi-toko dengan pembayaran simulasi, keranjang lintas toko, dan stok dengan Optimistic Concurrency Control (OCC).',
     ],
 
     'ui' => [
-        'title' => 'UMKMHub API v2 Documentation',
+        'title' => 'UMKMHub API Documentation',
     ],
 
     /*

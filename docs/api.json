@@ -2,8 +2,8 @@
   "openapi": "3.1.2",
   "info": {
     "title": "UMKMHub API v2",
-    "version": "2.0.0",
-    "description": "Kontrak OpenAPI resmi UMKMHub v2: marketplace multi-toko dengan pembayaran simulasi. Semua endpoint memakai prefix /api/v1 dan format JSON. Autentikasi memakai Bearer token Sanctum. Peran: pengunjung, customer (pembeli), umkm_admin (pemilik toko), dan superadmin. Admin UMKM hanya dapat mengakses data tokonya sendiri; satu akun maksimal memiliki dua toko. Pembayaran tidak melibatkan payment gateway: hasil pembayaran dipilih lewat endpoint simulasi. Stok memakai Optimistic Concurrency Control (field version).",
+    "version": "1.2.0",
+    "description": "Kontrak OpenAPI resmi UMKMHub: marketplace multi-toko dengan pembayaran simulasi. Semua endpoint memakai prefix /api/v1 dan format JSON. Autentikasi memakai Bearer token Sanctum. Peran: pengunjung, customer (pembeli), umkm_admin (pemilik toko), dan superadmin. Admin UMKM hanya dapat mengakses data tokonya sendiri; satu akun maksimal memiliki dua toko. Pembayaran tidak melibatkan payment gateway: hasil pembayaran dipilih lewat endpoint simulasi. Stok memakai Optimistic Concurrency Control (field version).",
     "contact": {
       "name": "UMKMHub",
       "email": "dev@umkmhub.id"

@@ -88,7 +88,7 @@
         <div class="mt-4 space-y-3">
             @foreach ($products as $product)
                 @php
-                    $image = $product->image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($product->image_path) : null;
+                    $image = $product->image_url;
                     $stock = (int) ($product->stock->quantity ?? 0);
                 @endphp
                 <article class="card p-4">

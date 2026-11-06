@@ -1,10 +1,10 @@
-# PRD UMKMHub v2 — Marketplace UMKM (Simulasi Transaksi)
+# PRD UMKMhub — Marketplace UMKM (Simulasi Transaksi)
 
 Nov 3, 2026 · @b
 
 ## 1. Ringkasan Produk
 
-UMKMHub v2 adalah marketplace multi-toko tempat pelaku UMKM membuka toko dan menjual produk, serta pembeli menjelajah dan memesan produk dari banyak UMKM dalam satu platform (konsep serupa Tokopedia, skala lebih kecil). Pembelian pada versi ini **hanya simulasi**: tidak ada payment gateway dan tidak ada uang sungguhan yang berpindah.
+UMKMHub adalah marketplace multi-toko tempat pelaku UMKM membuka toko dan menjual produk, serta pembeli menjelajah dan memesan produk dari banyak UMKM dalam satu platform (konsep serupa Tokopedia, skala lebih kecil). Pembelian pada versi ini **hanya simulasi**: tidak ada payment gateway dan tidak ada uang sungguhan yang berpindah.
 
 **Perubahan utama dari v1:**
 
