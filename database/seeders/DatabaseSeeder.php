@@ -134,6 +134,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Keripik Tempe Renyah',
                 'description' => 'Keripik tempe gurih renyah kemasan 200g, dibuat dari tempe segar tanpa MSG.',
                 'price' => 15000,
+                'image_path' => 'products/keripik-tempe.jpg',
                 'is_active' => true,
                 'qty' => 50,
             ],
@@ -143,6 +144,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Keripik Singkong Pedas',
                 'description' => 'Singkong pilihan, digoreng tipis dengan bumbu pedas khas Malang. Kemasan 150g.',
                 'price' => 12000,
+                'image_path' => 'products/keripik-singkong.jpg',
                 'is_active' => true,
                 'qty' => 3, // stok menipis
             ],
@@ -152,6 +154,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Keripik Bayam Crispy',
                 'description' => 'Bayam segar digoreng crispy, camilan sehat bebas pengawet. Kemasan 100g.',
                 'price' => 10000,
+                'image_path' => null,
                 'is_active' => false, // nonaktif
                 'qty' => 20,
             ],
@@ -165,6 +168,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Kopi Robusta Dampit 250g',
                 'description' => 'Kopi robusta petik merah lereng Semeru, proses natural, aroma coklat.',
                 'price' => 35000,
+                'image_path' => 'products/kopi-robusta.jpg',
                 'is_active' => true,
                 'qty' => 30,
             ],
@@ -174,6 +178,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Kopi Arabika Flores 200g',
                 'description' => 'Single origin Flores, proses washed, cita rasa floral dan bright acidity.',
                 'price' => 55000,
+                'image_path' => 'products/kopi-arabika.jpg',
                 'is_active' => true,
                 'qty' => 15,
             ],
@@ -183,6 +188,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Drip Coffee Bag Robusta (10pcs)',
                 'description' => 'Kopi celup praktis, cocok untuk perjalanan. Isi 10 sachet per kemasan.',
                 'price' => 45000,
+                'image_path' => 'products/drip-coffee.jpg',
                 'is_active' => true,
                 'qty' => 2, // stok menipis
             ],
