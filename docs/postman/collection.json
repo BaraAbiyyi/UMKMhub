@@ -84,6 +84,11 @@
       "key": "user_id",
       "value": "1",
       "type": "string"
+    },
+    {
+      "key": "store_slug",
+      "value": "toko-sari",
+      "type": "string"
     }
   ],
   "item": [
@@ -179,30 +184,6 @@
           ]
         },
         {
-          "name": "POST Logout dan hapus token aktif",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/v1/auth/logout",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "logout"
-              ]
-            },
-            "description": "Logout dan hapus token aktif"
-          }
-        },
-        {
           "name": "GET Profil pengguna yang sedang terautentikasi",
           "request": {
             "method": "GET",
@@ -238,6 +219,10 @@
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
@@ -250,7 +235,16 @@
                 "store-applications"
               ]
             },
-            "description": ""
+            "description": "Daftar sebagai UMKM baru. Membuat akun Admin UMKM sekaligus mengajukan toko.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sari Rahayu\",\n  \"email\": \"sari@umkmhub.id\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"store_name\": \"Toko Sari\",\n  \"description\": \"Toko kerajinan tangan khas Malang\",\n  \"category_id\": 1,\n  \"city\": \"Malang\",\n  \"address\": \"Jl. Semanggi Timur 12\",\n  \"phone\": \"081234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         }
       ]
@@ -292,17 +286,17 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/stores/{{store_id}}",
+              "raw": "{{base_url}}/v1/stores/{{store_slug}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
                 "stores",
-                "{{store_id}}"
+                "{{store_slug}}"
               ]
             },
-            "description": ""
+            "description": "Lihat detail toko berdasarkan slug"
           }
         },
         {
@@ -316,18 +310,18 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/stores/{{store_id}}/products",
+              "raw": "{{base_url}}/v1/stores/{{store_slug}}/products",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
                 "stores",
-                "{{store_id}}",
+                "{{store_slug}}",
                 "products"
               ]
             },
-            "description": ""
+            "description": "Daftar produk aktif milik toko (lookup by slug)"
           }
         }
       ]
@@ -390,6 +384,10 @@
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
@@ -403,7 +401,16 @@
                 "{{store_id}}"
               ]
             },
-            "description": ""
+            "description": "Update profil toko milik sendiri",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"store_name\": \"Toko Sari Update\",\n  \"description\": \"Deskripsi toko yang diperbarui\",\n  \"category_id\": 1,\n  \"city\": \"Surabaya\",\n  \"address\": \"Jl. Baru No. 5\",\n  \"phone\": \"082233445566\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
@@ -469,6 +476,10 @@
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
@@ -483,7 +494,16 @@
                 "products"
               ]
             },
-            "description": ""
+            "description": "Tambah produk baru ke toko",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Tas Anyaman Bambu\",\n  \"description\": \"Tas anyaman dari bambu pilihan\",\n  \"price\": 75000,\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
@@ -493,6 +513,10 @@
             "header": [
               {
                 "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
                 "value": "application/json"
               }
             ],
@@ -509,7 +533,16 @@
                 "{{product_id}}"
               ]
             },
-            "description": ""
+            "description": "Update data produk toko",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Tas Anyaman Bambu Premium\",\n  \"description\": \"Versi premium dari tas anyaman bambu\",\n  \"price\": 95000,\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
@@ -1502,6 +1535,30 @@
           }
         }
       ]
+    },
+    {
+      "name": "POST Logout dan hapus token aktif",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/auth/logout",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "auth",
+            "logout"
+          ]
+        },
+        "description": "Logout dan hapus token aktif"
+      }
     }
   ]
 }
